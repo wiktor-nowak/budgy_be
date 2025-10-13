@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  output   =  "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  role Role @default(USER)
+  password String
+  mainAccount Account?
+  sharedAccounts UserToAccount[]
+  createdAt DateTime @default(now())
+}
+
+model Account {
+  id Int @id @default(autoincrement())
+  name String
+  balance Decimal
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int @unique
+  coOwners UserToAccount[]
+  expenses Expense[]
+}
+
+model UserToAccount {
+  user       User     @relation(fields: [userId], references: [id])
+  userId   Int
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId Int
+  assignedAt DateTime @default(now())
+
+  @@id([userId, accountId])
+}
+
+model Expense {
+  id Int @id @default(autoincrement())
+  category String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  account Account @relation(fields: [accountId], references: [id])
+  accountId Int
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String
+  shortcut String
+  monthlyBalance Decimal
+}
+
+enum Role {
+  USER
+  ADMIN
+}

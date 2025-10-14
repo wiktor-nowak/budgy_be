@@ -25,7 +25,7 @@ const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
 const prisma = new client_1.PrismaClient({ adapter });
 const SALT = 10;
-const expiryTime = "5m";
+const expiryTime = "1h";
 const getAllUsers = () => __awaiter(void 0, void 0, void 0, function* () {
     const users = yield prisma.user.findMany();
     return users;
@@ -69,14 +69,20 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const token = createToken(dbUser);
         res
             .status(200)
-            .cookie("token", token, { httpOnly: true, maxAge: 20000 })
+            .cookie("token", token, { httpOnly: true, maxAge: 3600000 })
             .send({
             message: `User ${dbUser.name} successfully authenticated!`,
             token: token,
         });
+        console.log(token);
+        console.log(res);
     }
     catch (error) {
         res.status(500).send({ error: error });
+        console.error("FUCKEDUP");
+    }
+    finally {
+        return res;
     }
 }));
 // router.patch("/:id", async (req: Request, res: Response): Promise<any> => {

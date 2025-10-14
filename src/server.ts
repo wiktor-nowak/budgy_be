@@ -9,7 +9,7 @@ import userRoutes from "./routes/users";
 import authRoutes from "./routes/auth";
 
 const app = express();
-const PORT = process.env.PORT ?? 5000;
+const PORT = process.env.PORT ?? 3003;
 const corsOptions = {
   origin: "*",
   methods: "GET,PUT,PATCH,POST,DELETE",
@@ -147,6 +147,7 @@ app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/categories", authRoutes);
 
 app.listen(PORT, () => {
   console.log(`Express server running on port ${PORT}`);

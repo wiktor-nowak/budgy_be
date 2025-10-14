@@ -11,7 +11,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const users_1 = __importDefault(require("./routes/users"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const app = (0, express_1.default)();
-const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 5000;
+const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3003;
 const corsOptions = {
     origin: "*",
     methods: "GET,PUT,PATCH,POST,DELETE",

@@ -14,16 +14,16 @@ const getAllUsers = async () => {
   return users;
 };
 
-router.get("/", async (_req: Request, res: Response) => {
+router.get("/", async (_req: Request, res: Response): Promise<any> => {
   try {
     const users = await getAllUsers();
-    res.status(200).send({ response: users });
+    return res.status(200).send({ response: users });
   } catch (error) {
     res.status(500).json({ error: error });
   }
 });
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", async (req: Request, res: Response): Promise<any> => {
   const { name, email, password, isAdmin } = req.body;
   const hashedPassword = await bcrypt.hash(password, SALT);
   const user: Omit<
@@ -39,11 +39,11 @@ router.post("/", async (req: Request, res: Response) => {
     const createdUser = await prisma.user.create({
       data: user,
     });
-    res
+    return res
       .status(201)
-      .send({ response: `User ${createdUser.name} successfully created.` });
+      .send({ response: `User ${createdUser.username} successfully created.` });
   } catch (error) {
-    res.status(500).send({ error: error });
+    return res.status(500).send({ error: error });
   }
 });
 

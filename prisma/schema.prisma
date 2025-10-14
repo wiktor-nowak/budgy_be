@@ -17,29 +17,44 @@ datasource db {
 
 model User {
   id Int @id @default(autoincrement())
-  name String
+  username String
   email String @unique
   role Role @default(USER)
   password String
-  mainAccount Account?
-  sharedAccounts UserToAccount[]
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  //Optional
+  name String?
+  surname String?
+
+  // Relations
+  ownedAccounts Account[] @relation("UserAccounts")
+  sharedAccounts UserToAccount[]
+
+  @@unique([id])
 }
 
 model Account {
   id Int @id @default(autoincrement())
   name String
+  type AccountType
   balance Decimal
+  lastMonthlyBalance Decimal
   description String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  owner User @relation(fields: [ownerId], references: [id])
-  ownerId Int @unique
+  
+  // Relations
+  owner User? @relation("UserAccounts", fields: [ownerId], references: [id])
+  ownerId Int? // @unique(if: "type = 'CASH'")
   coOwners UserToAccount[]
-  expenses Expense[]
+  expenses Expense[] @relation("AccountExpenses")
+  monthlyBalances MonthlyBalance[] @relation("AccountBalances")
 }
 
 model UserToAccount {
+  // Relations
   user       User     @relation(fields: [userId], references: [id])
   userId   Int
   account   Account @relation(fields: [accountId], references: [id])
@@ -49,23 +64,59 @@ model UserToAccount {
   @@id([userId, accountId])
 }
 
+model MonthlyBalance {
+  id Int @id @default(autoincrement())
+  balance Decimal
+  month Month
+  year Int
+
+  // Relations
+  account Account @relation("AccountBalances", fields: [accountId], references: [id])
+  accountId Int @unique
+}
+
 model Expense {
   id Int @id @default(autoincrement())
-  category String
+  amount Decimal
+  shared Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  account Account @relation(fields: [accountId], references: [id])
+  
+  // Relations
+  account Account @relation("AccountExpenses", fields: [accountId], references: [id])
   accountId Int
+  category Category @relation("ExpenseCategory", fields: [categoryId], references: [id])
+  categoryId Int
 }
 
 model Category {
   id Int @id @default(autoincrement())
   name String
   shortcut String
-  monthlyBalance Decimal
+  expenses Expense[] @relation("ExpenseCategory")
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+enum AccountType {
+  CASH
+  BANK
+  SHARED
+}
+
+enum Month {
+  JANUARY
+  FEBRUARY
+  MARCH
+  APRIL
+  MAY
+  JUNE
+  JULY
+  AUGUST
+  SEPTEMBER
+  OCTOBER
+  NOVEMBER
 }

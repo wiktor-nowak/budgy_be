@@ -1,6 +1,6 @@
 // LOGIN
 
-import express, { Response, Request } from "express";
+import express, { Response, Request, NextFunction } from "express";
 import { PrismaClient, User } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
@@ -16,16 +16,12 @@ const prisma = new PrismaClient({ adapter });
 const SALT = 10;
 const expiryTime = "1h";
 
-const getAllUsers = async () => {
-  const users = await prisma.user.findMany();
-  return users;
-};
-
 // Create token
 const createToken = (user: User) => {
-  return jwt.sign({ id: user.id }, jwtSecret, {
-    expiresIn: expiryTime,
-  });
+  return jwt.sign(
+    { exp: Math.floor(Date.now() / 1000) + 60 * 60, id: user.id },
+    jwtSecret
+  );
 };
 
 const passwordRegex = /^(?=.*[0-9])(?=.*[@!#$%^&*])/;
@@ -76,6 +72,36 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
     return res;
   }
 });
+
+export interface AuthRequest extends Request {
+  user?: { id: number };
+}
+
+export function authMiddleware(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) {
+  const authHeader = req.headers.authorization;
+  console.log(authHeader);
+  if (!authHeader) {
+    res.status(401).json({ error: "Missing token" });
+  } else {
+    const token = authHeader.split(" ")[1];
+    console.log(token);
+    try {
+      const decoded = jwt.verify(token, jwtSecret) as {
+        id: number;
+      };
+      console.log(decoded.id);
+      req.user = { id: decoded.id };
+      console.log(req);
+      next();
+    } catch (err) {
+      res.status(403).json({ error: "Invalid token" });
+    }
+  }
+}
 
 // router.patch("/:id", async (req: Request, res: Response): Promise<any> => {
 //   const id = Number(req.params.id);

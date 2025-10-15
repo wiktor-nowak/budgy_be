@@ -15,80 +15,56 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
-const bcrypt_1 = __importDefault(require("bcrypt"));
 const connectionString = process.env.DATABASE_URL;
 const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
 const prisma = new client_1.PrismaClient({ adapter });
-const SALT = 10;
-const getAllUsers = () => __awaiter(void 0, void 0, void 0, function* () {
-    const users = yield prisma.user.findMany();
-    console.log(users);
-    return users;
+const getAllCategories = () => __awaiter(void 0, void 0, void 0, function* () {
+    const categories = yield prisma.category.findMany();
+    return categories;
 });
 router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("received");
     try {
-        const users = yield getAllUsers();
-        console.log(users);
-        res.status(200).send({ response: users });
+        const categories = yield getAllCategories();
+        res.status(200).send({ response: categories });
     }
     catch (error) {
         res.status(500).json({ error: error });
     }
 }));
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, email, password, isAdmin } = req.body;
-    const hashedPassword = yield bcrypt_1.default.hash(password, SALT);
-    const user = {
-        username,
-        email,
-        password: hashedPassword,
-        role: isAdmin ? "ADMIN" : "USER",
+    const { name, shortcut } = req.body;
+    const category = {
+        name,
+        shortcut,
     };
     try {
-        const createdUser = yield prisma.user.create({
-            data: user,
+        const categoryCreated = yield prisma.category.create({
+            data: category,
         });
-        res
-            .status(201)
-            .send({ response: `User ${createdUser.username} successfully created.` });
+        res.status(201).send({
+            response: `Category ${categoryCreated.name} successfully created.`,
+        });
     }
     catch (error) {
         res.status(500).send({ error: error });
     }
 }));
-router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id))
-        res.status(400).send({ error: "Invalid user ID" });
-    const userFragment = req.body;
-    try {
-        const updatedUser = yield prisma.user.update({
-            where: { id },
-            data: userFragment,
-        });
-        res.status(200).send({ message: "User updated", user: updatedUser });
-    }
-    catch (error) {
-        res.status(404).send({ error: "User not found or update failed." });
-    }
-}));
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = Number(req.params.id);
     if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid user ID" });
+        res.status(400).json({ error: "Invalid category ID" });
     }
     try {
-        yield prisma.user.delete({
+        yield prisma.category.delete({
             where: { id },
         });
         res
             .status(200)
-            .json({ message: `User with ID ${id} deleted successfully.` });
+            .json({ message: `Category with ID ${id} deleted successfully.` });
     }
     catch (error) {
-        res.status(404).json({ error: "User not found or already deleted." });
+        res.status(404).json({ error: "Category not found or already deleted." });
     }
 }));
 exports.default = router;

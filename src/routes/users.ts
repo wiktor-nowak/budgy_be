@@ -11,27 +11,31 @@ const SALT = 10;
 
 const getAllUsers = async () => {
   const users = await prisma.user.findMany();
+  console.log(users);
   return users;
 };
 
-router.get("/", async (_req: Request, res: Response): Promise<any> => {
+router.get("/", async (_req: Request, res: Response) => {
+  console.log("received");
+
   try {
     const users = await getAllUsers();
-    return res.status(200).send({ response: users });
+    console.log(users);
+    res.status(200).send({ response: users });
   } catch (error) {
     res.status(500).json({ error: error });
   }
 });
 
-router.post("/", async (req: Request, res: Response): Promise<any> => {
-  const { name, email, password, isAdmin } = req.body;
+router.post("/", async (req: Request, res: Response) => {
+  const { username, email, password, isAdmin } = req.body;
   const hashedPassword = await bcrypt.hash(password, SALT);
   const user: Omit<
     User,
-    "mainAccount" | "sharedAccounts" | "id" | "createdAt"
+    "id" | "createdAt" | "updatedAt" | "name" | "surname"
   > = {
-    name: name,
-    email: email,
+    username,
+    email,
     password: hashedPassword,
     role: isAdmin ? "ADMIN" : "USER",
   };
@@ -39,17 +43,17 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
     const createdUser = await prisma.user.create({
       data: user,
     });
-    return res
+    res
       .status(201)
       .send({ response: `User ${createdUser.username} successfully created.` });
   } catch (error) {
-    return res.status(500).send({ error: error });
+    res.status(500).send({ error: error });
   }
 });
 
-router.patch("/:id", async (req: Request, res: Response): Promise<any> => {
+router.patch("/:id", async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  if (isNaN(id)) return res.status(400).send({ error: "Invalid user ID" });
+  if (isNaN(id)) res.status(400).send({ error: "Invalid user ID" });
   const userFragment: Partial<
     Pick<User, "name" | "email" | "password" | "role">
   > = req.body;
@@ -59,17 +63,17 @@ router.patch("/:id", async (req: Request, res: Response): Promise<any> => {
       where: { id },
       data: userFragment,
     });
-    return res.status(200).send({ message: "User updated", user: updatedUser });
+    res.status(200).send({ message: "User updated", user: updatedUser });
   } catch (error) {
-    return res.status(404).send({ error: "User not found or update failed." });
+    res.status(404).send({ error: "User not found or update failed." });
   }
 });
 
-router.delete("/:id", async (req: Request, res: Response): Promise<any> => {
+router.delete("/:id", async (req: Request, res: Response) => {
   const id = Number(req.params.id);
 
   if (isNaN(id)) {
-    return res.status(400).json({ error: "Invalid user ID" });
+    res.status(400).json({ error: "Invalid user ID" });
   }
 
   try {
@@ -77,13 +81,11 @@ router.delete("/:id", async (req: Request, res: Response): Promise<any> => {
       where: { id },
     });
 
-    return res
+    res
       .status(200)
       .json({ message: `User with ID ${id} deleted successfully.` });
   } catch (error) {
-    return res
-      .status(404)
-      .json({ error: "User not found or already deleted." });
+    res.status(404).json({ error: "User not found or already deleted." });
   }
 });
 

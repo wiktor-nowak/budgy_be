@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.authMiddleware = authMiddleware;
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
@@ -26,15 +27,9 @@ const adapter = new adapter_pg_1.PrismaPg({ connectionString });
 const prisma = new client_1.PrismaClient({ adapter });
 const SALT = 10;
 const expiryTime = "1h";
-const getAllUsers = () => __awaiter(void 0, void 0, void 0, function* () {
-    const users = yield prisma.user.findMany();
-    return users;
-});
 // Create token
 const createToken = (user) => {
-    return jsonwebtoken_1.default.sign({ id: user.id }, jwtSecret, {
-        expiresIn: expiryTime,
-    });
+    return jsonwebtoken_1.default.sign({ exp: Math.floor(Date.now() / 1000) + 60 * 60, id: user.id }, jwtSecret);
 };
 const passwordRegex = /^(?=.*[0-9])(?=.*[@!#$%^&*])/;
 const passwordCheck = zod_1.z.string().min(6).max(20).regex(passwordRegex, {
@@ -85,6 +80,27 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res;
     }
 }));
+function authMiddleware(req, res, next) {
+    const authHeader = req.headers.authorization;
+    console.log(authHeader);
+    if (!authHeader) {
+        res.status(401).json({ error: "Missing token" });
+    }
+    else {
+        const token = authHeader.split(" ")[1];
+        console.log(token);
+        try {
+            const decoded = jsonwebtoken_1.default.verify(token, jwtSecret);
+            console.log(decoded.id);
+            req.user = { id: decoded.id };
+            console.log(req);
+            next();
+        }
+        catch (err) {
+            res.status(403).json({ error: "Invalid token" });
+        }
+    }
+}
 // router.patch("/:id", async (req: Request, res: Response): Promise<any> => {
 //   const id = Number(req.params.id);
 //   if (isNaN(id)) return res.status(400).send({ error: "Invalid user ID" });

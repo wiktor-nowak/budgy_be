@@ -61,4 +61,49 @@ router.delete("/:id", async (req: Request, res: Response) => {
   }
 });
 
+router.get("/:id", async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid category ID" });
+  }
+
+  try {
+    const category = await prisma.category.findUnique({
+      where: { id },
+    });
+    if (!category) {
+      res.status(404).json({ error: "Category not found" });
+    } else {
+      res.status(200).send({ response: category });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+});
+
+router.patch("/:id", async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid category ID" });
+  }
+
+  const { name, shortcut } = req.body;
+  const category: Omit<Category, "id" | "createdAt" | "updatedAt"> = {
+    name,
+    shortcut,
+  };
+
+  try {
+    const updatedCategory = await prisma.category.update({
+      where: { id },
+      data: category,
+    });
+    res.status(200).send({
+      response: `Category ${updatedCategory.name} successfully updated.`,
+    });
+  } catch (error) {
+    res.status(500).send({ error: error });
+  }
+});
+
 export default router;

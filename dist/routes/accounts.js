@@ -91,7 +91,7 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(400).json({ error: "Invalid acc ID" });
     }
     try {
-        yield prisma.expense.delete({
+        yield prisma.account.delete({
             where: { id },
         });
         res
@@ -100,6 +100,49 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
     catch (error) {
         res.status(404).json({ error: "Account not found or already deleted." });
+    }
+}));
+router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+        res.status(400).json({ error: "Invalid account ID" });
+    }
+    try {
+        const account = yield prisma.account.findUnique({
+            where: { id },
+        });
+        if (!account) {
+            res.status(404).json({ error: "Account not found" });
+        }
+        else {
+            res.status(200).send({ response: account });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error });
+    }
+}));
+router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+        res.status(400).json({ error: "Invalid account ID" });
+    }
+    const { name, balance, description } = req.body;
+    try {
+        const updatedAccount = yield prisma.account.update({
+            where: { id },
+            data: {
+                name,
+                balance: client_1.Prisma.Decimal(balance),
+                description,
+            },
+        });
+        res.status(200).send({
+            response: `Account ${updatedAccount.name} successfully updated.`,
+        });
+    }
+    catch (error) {
+        res.status(500).send({ error: error });
     }
 }));
 exports.default = router;

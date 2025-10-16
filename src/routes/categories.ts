@@ -42,6 +42,7 @@ router.post("/", async (req: Request, res: Response) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
   const id = Number(req.params.id);
+  console.log(id);
 
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid category ID" });

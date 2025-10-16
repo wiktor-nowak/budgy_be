@@ -39,14 +39,6 @@ const loginSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
     password: passwordCheck,
 });
-// router.get("/", async (_req: Request, res: Response) => {
-//   try {
-//     const users = await getAllUsers();
-//     res.status(200).send({ response: users });
-//   } catch (error) {
-//     res.status(500).json({ error: error });
-//   }
-// });
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = loginSchema.safeParse(req.body);
     if (!result.success)
@@ -101,38 +93,4 @@ function authMiddleware(req, res, next) {
         }
     }
 }
-// router.patch("/:id", async (req: Request, res: Response): Promise<any> => {
-//   const id = Number(req.params.id);
-//   if (isNaN(id)) return res.status(400).send({ error: "Invalid user ID" });
-//   const userFragment: Partial<
-//     Pick<User, "name" | "email" | "password" | "role">
-//   > = req.body;
-//   try {
-//     const updatedUser = await prisma.user.update({
-//       where: { id },
-//       data: userFragment,
-//     });
-//     return res.status(200).send({ message: "User updated", user: updatedUser });
-//   } catch (error) {
-//     return res.status(404).send({ error: "User not found or update failed." });
-//   }
-// });
-// router.delete("/:id", async (req: Request, res: Response): Promise<any> => {
-//   const id = Number(req.params.id);
-//   if (isNaN(id)) {
-//     return res.status(400).json({ error: "Invalid user ID" });
-//   }
-//   try {
-//     await prisma.user.delete({
-//       where: { id },
-//     });
-//     return res
-//       .status(200)
-//       .json({ message: `User with ID ${id} deleted successfully.` });
-//   } catch (error) {
-//     return res
-//       .status(404)
-//       .json({ error: "User not found or already deleted." });
-//   }
-// });
 exports.default = router;

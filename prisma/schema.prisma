@@ -29,7 +29,7 @@ model User {
   surname String?
 
   // Relations
-  ownedAccounts Account[] @relation("UserAccounts")
+  ownedAccounts Account[]
   sharedAccounts UserToAccount[]
 
   @@unique([id])
@@ -46,19 +46,19 @@ model Account {
   updatedAt DateTime @updatedAt
   
   // Relations
-  owner User? @relation("UserAccounts", fields: [ownerId], references: [id])
-  ownerId Int? // @unique(if: "type = 'CASH'")
+  owner User? @relation(fields: [ownerId], references: [id])
+  ownerId Int? @unique // @unique(if: "type = 'CASH'")
   coOwners UserToAccount[]
-  expenses Expense[] @relation("AccountExpenses")
+  expenses Expense[]
   monthlyBalances MonthlyBalance[] @relation("AccountBalances")
 }
 
 model UserToAccount {
   // Relations
   user       User     @relation(fields: [userId], references: [id])
-  userId   Int
+  userId   Int @unique
   account   Account @relation(fields: [accountId], references: [id])
-  accountId Int
+  accountId Int @unique
   assignedAt DateTime @default(now())
 
   @@id([userId, accountId])
@@ -83,10 +83,10 @@ model Expense {
   updatedAt DateTime @updatedAt
   
   // Relations
-  account Account @relation("AccountExpenses", fields: [accountId], references: [id])
-  accountId Int
-  category Category @relation("ExpenseCategory", fields: [categoryId], references: [id])
-  categoryId Int
+  account Account @relation(fields: [accountId], references: [id])
+  accountId Int @unique
+  category Category @relation(fields: [categoryId], references: [id])
+  categoryId Int @unique
 }
 
 model Category {
@@ -97,7 +97,7 @@ model Category {
   updatedAt DateTime @updatedAt
 
   // Relations
-  expenses Expense[] @relation("ExpenseCategory")
+  expenses Expense[]
 }
 
 enum Role {

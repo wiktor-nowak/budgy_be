@@ -10,14 +10,18 @@ const prisma = new PrismaClient({ adapter });
 const SALT = 10;
 
 const getAllUsers = async () => {
+  // const users = await prisma.user.findMany({
+  //   include: {
+  //     ownedAccounts: true,
+  //     sharedAccounts: true,
+  //   },
+  // });
   const users = await prisma.user.findMany();
   console.log(users);
   return users;
 };
 
 router.get("/", async (_req: Request, res: Response) => {
-  console.log("received");
-
   try {
     const users = await getAllUsers();
     console.log(users);

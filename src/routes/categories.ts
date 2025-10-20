@@ -41,12 +41,8 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 router.delete("/:id", async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
+  const id = req.params.id;
   console.log(id);
-
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid category ID" });
-  }
 
   try {
     await prisma.category.delete({
@@ -62,10 +58,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 router.get("/:id", async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid category ID" });
-  }
+  const id = req.params.id;
 
   try {
     const category = await prisma.category.findUnique({
@@ -82,10 +75,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 router.patch("/:id", async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid category ID" });
-  }
+  const id = req.params.id;
 
   const { name, shortcut } = req.body;
   const category: Omit<Category, "id" | "createdAt" | "updatedAt"> = {

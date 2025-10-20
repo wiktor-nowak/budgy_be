@@ -65,7 +65,7 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
 });
 
 export interface AuthRequest extends Request {
-  user?: { id: number };
+  user?: { id: string };
 }
 
 export function authMiddleware(
@@ -82,7 +82,7 @@ export function authMiddleware(
     console.log(token);
     try {
       const decoded = jwt.verify(token, jwtSecret) as {
-        id: number;
+        id: string;
       };
       console.log(decoded.id);
       req.user = { id: decoded.id };

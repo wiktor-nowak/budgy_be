@@ -35,6 +35,8 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   console.log(name, type, balance, description);
   console.log(req.user?.id);
 
+  const id = req.user?.id;
+
   try {
     if (!Object.values(AccountType).includes(type)) {
       throw new Error("Type is not properly defined!");
@@ -53,13 +55,18 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       const accountCreated = await prisma.account.create({
         data: account,
       });
-      const u2a: Omit<UserToAccount, "assignedAt"> = {
-        userId: 1,
-        accountId: accountCreated.id,
-      };
-      await prisma.userToAccount.create({
-        data: u2a,
-      });
+
+      if (id) {
+        const u2a: Omit<UserToAccount, "assignedAt"> = {
+          userId: id,
+          accountId: accountCreated.id,
+        };
+        await prisma.userToAccount.create({
+          data: u2a,
+        });
+      } else {
+        res.status(404).send({ response: `Id number not found!` });
+      }
     } else {
       account = {
         name,
@@ -86,11 +93,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid acc ID" });
-  }
+  const id = req.params.id;
 
   try {
     await prisma.account.delete({
@@ -106,10 +109,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 router.get("/:id", async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid account ID" });
-  }
+  const id = req.params.id;
 
   try {
     const account = await prisma.account.findUnique({
@@ -126,10 +126,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 router.patch("/:id", async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid account ID" });
-  }
+  const id = req.params.id;
 
   const { name, balance, description } = req.body;
 

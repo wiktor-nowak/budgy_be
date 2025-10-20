@@ -22,14 +22,9 @@ const adapter = new adapter_pg_1.PrismaPg({ connectionString });
 const prisma = new client_1.PrismaClient({ adapter });
 const SALT = 10;
 const getAllUsers = () => __awaiter(void 0, void 0, void 0, function* () {
-    // const users = await prisma.user.findMany({
-    //   include: {
-    //     ownedAccounts: true,
-    //     sharedAccounts: true,
-    //   },
-    // });
-    const users = yield prisma.user.findMany();
-    console.log(users);
+    const users = yield prisma.user.findMany({
+        select: { id: true, username: true },
+    });
     return users;
 });
 router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {

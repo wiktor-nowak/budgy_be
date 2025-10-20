@@ -15,15 +15,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
+const auth_1 = require("./auth");
 const connectionString = process.env.DATABASE_URL;
 const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
 const prisma = new client_1.PrismaClient({ adapter });
 const getAllExpenses = () => __awaiter(void 0, void 0, void 0, function* () {
-    const expenses = yield prisma.expense.findMany();
+    const expenses = yield prisma.expense.findMany({
+        include: {
+            account: {
+                select: { type: true },
+            },
+            category: {
+                select: { name: true },
+            },
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+    });
+    console.log(expenses);
     return expenses;
 });
-router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", auth_1.authMiddleware, (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const expenses = yield getAllExpenses();
         res.status(200).send({ response: expenses });
@@ -32,24 +46,44 @@ router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ error: error });
     }
 }));
-router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { amount, shared, accountId, categoryId } = req.body;
-    const expense = {
-        amount,
-        shared,
-        accountId,
-        categoryId,
-    };
+router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { amount, accountId, categoryId, description } = req.body;
+    if (!amount || !accountId || !categoryId) {
+        res.status(400).json({ error: "Missing required fields" });
+    }
     try {
-        yield prisma.expense.create({
-            data: expense,
+        const newExpense = yield prisma.expense.create({
+            data: {
+                amount,
+                accountId,
+                categoryId,
+                description,
+                shared: false,
+            },
         });
-        res.status(201).send({
-            response: `Expense added!`,
-        });
+        res.status(201).json({ response: newExpense });
     }
     catch (error) {
-        res.status(500).send({ error: error });
+        res.status(500).json({ error: "Failed to create expense" });
+    }
+}));
+router.patch("/:id", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const { amount, accountId, categoryId, description } = req.body;
+    try {
+        const updatedExpense = yield prisma.expense.update({
+            where: { id },
+            data: {
+                amount,
+                accountId,
+                categoryId,
+                description,
+            },
+        });
+        res.status(200).json({ response: updatedExpense });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to update expense" });
     }
 }));
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {

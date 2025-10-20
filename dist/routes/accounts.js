@@ -113,23 +113,17 @@ router.get("/my-accounts", auth_1.authMiddleware, (req, res) => __awaiter(void 0
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
     }
-    console.log(userId);
     try {
-        // 1. Get IDs of accounts shared with the user
         const sharedAccountLinks = yield prisma.userToAccount.findMany({
             where: { userId: userId },
             select: { accountId: true },
         });
-        console.log(sharedAccountLinks);
         const sharedAccountIds = sharedAccountLinks.map((link) => link.accountId);
-        console.log(sharedAccountIds);
-        // 2. Find all accounts that are either owned by the user OR are in the list of shared account IDs
         const accounts = yield prisma.account.findMany({
             where: {
                 OR: [{ ownerId: userId }, { id: { in: sharedAccountIds } }],
             },
         });
-        console.log(accounts);
         res.status(200).send({ response: accounts });
     }
     catch (error) {

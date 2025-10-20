@@ -10,14 +10,9 @@ const prisma = new PrismaClient({ adapter });
 const SALT = 10;
 
 const getAllUsers = async () => {
-  // const users = await prisma.user.findMany({
-  //   include: {
-  //     ownedAccounts: true,
-  //     sharedAccounts: true,
-  //   },
-  // });
-  const users = await prisma.user.findMany();
-  console.log(users);
+  const users = await prisma.user.findMany({
+    select: { id: true, username: true },
+  });
   return users;
 };
 

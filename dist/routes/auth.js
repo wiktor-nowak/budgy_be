@@ -70,6 +70,26 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).send({ error: error });
     }
 }));
+router.get("/me", authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    if (!userId) {
+        res.status(401).json({ error: "User not authenticated" });
+    }
+    try {
+        const user = yield prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, username: true, email: true },
+        });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+        }
+        res.status(200).json({ response: user });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to fetch user profile" });
+    }
+}));
 function authMiddleware(req, res, next) {
     console.log("hello");
     const authHeader = req.headers.authorization;

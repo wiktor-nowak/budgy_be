@@ -111,12 +111,56 @@ router.delete("/:id", async (req: Request, res: Response) => {
   }
 });
 
+router.get(
+  "/my-accounts",
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: "User not authenticated" });
+    }
+
+    try {
+      const sharedAccountLinks = await prisma.userToAccount.findMany({
+        where: { userId: userId },
+        select: { accountId: true },
+      });
+      const sharedAccountIds = sharedAccountLinks.map((link) => link.accountId);
+
+      const accounts = await prisma.account.findMany({
+        where: {
+          OR: [{ ownerId: userId }, { id: { in: sharedAccountIds } }],
+        },
+      });
+      res.status(200).send({ response: accounts });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user accounts" });
+    }
+  }
+);
+
 router.get("/:id", async (req: Request, res: Response) => {
   const id = req.params.id;
 
   try {
     const account = await prisma.account.findUnique({
       where: { id },
+      include: {
+        owner: {
+          select: {
+            username: true,
+          },
+        },
+        coOwners: {
+          include: {
+            user: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        },
+      },
     });
     if (!account) {
       res.status(404).json({ error: "Account not found" });

@@ -34,11 +34,13 @@ router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
+    console.log("hi!");
     const { name, type, balance, description } = req.body;
     let account;
     console.log(name, type, balance, description);
-    console.log((_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
+    console.log("In accounts: " + ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id));
+    const id = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
     try {
         if (!Object.values(client_1.AccountType).includes(type)) {
             throw new Error("Type is not properly defined!");
@@ -55,27 +57,33 @@ router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, 
             const accountCreated = yield prisma.account.create({
                 data: account,
             });
-            const u2a = {
-                userId: 1,
-                accountId: accountCreated.id,
-            };
-            yield prisma.userToAccount.create({
-                data: u2a,
-            });
+            if (id) {
+                const u2a = {
+                    userId: id,
+                    accountId: accountCreated.id,
+                };
+                yield prisma.userToAccount.create({
+                    data: u2a,
+                });
+            }
+            else {
+                res.status(404).send({ response: `Id number not found!` });
+            }
         }
         else {
             account = {
                 name,
                 type,
                 description,
-                ownerId: (_c = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id) !== null && _c !== void 0 ? _c : null,
+                ownerId: (_d = (_c = req.user) === null || _c === void 0 ? void 0 : _c.id) !== null && _d !== void 0 ? _d : null,
                 balance: client_1.Prisma.Decimal(balance),
                 lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
             };
             console.log(account);
-            yield prisma.account.create({
+            const acc1 = yield prisma.account.create({
                 data: account,
             });
+            console.log(acc1);
         }
         res.status(201).send({
             response: `Account ${account.name} created!`,
@@ -86,10 +94,7 @@ router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, 
     }
 }));
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid acc ID" });
-    }
+    const id = req.params.id;
     try {
         yield prisma.account.delete({
             where: { id },
@@ -103,10 +108,7 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 }));
 router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid account ID" });
-    }
+    const id = req.params.id;
     try {
         const account = yield prisma.account.findUnique({
             where: { id },
@@ -123,10 +125,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 }));
 router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid account ID" });
-    }
+    const id = req.params.id;
     const { name, balance, description } = req.body;
     try {
         const updatedAccount = yield prisma.account.update({

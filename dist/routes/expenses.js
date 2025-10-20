@@ -53,9 +53,9 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid expense ID" });
+    const id = req.params.id;
+    if (!id) {
+        res.status(400).send({ error: "Invalid user ID" });
     }
     try {
         yield prisma.expense.delete({

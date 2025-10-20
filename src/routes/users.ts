@@ -43,6 +43,7 @@ router.post("/", async (req: Request, res: Response) => {
     password: hashedPassword,
     role: isAdmin ? "ADMIN" : "USER",
   };
+  console.log(user);
   try {
     const createdUser = await prisma.user.create({
       data: user,
@@ -56,8 +57,10 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 router.patch("/:id", async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) res.status(400).send({ error: "Invalid user ID" });
+  const id = req.params.id;
+  if (!id) {
+    res.status(400).send({ error: "Invalid user ID" });
+  }
   const userFragment: Partial<
     Pick<User, "name" | "email" | "password" | "role">
   > = req.body;
@@ -74,10 +77,9 @@ router.patch("/:id", async (req: Request, res: Response) => {
 });
 
 router.delete("/:id", async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid user ID" });
+  const id = req.params.id;
+  if (!id) {
+    res.status(400).send({ error: "Invalid user ID" });
   }
 
   try {

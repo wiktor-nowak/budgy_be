@@ -51,11 +51,8 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
+    const id = req.params.id;
     console.log(id);
-    if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid category ID" });
-    }
     try {
         yield prisma.category.delete({
             where: { id },
@@ -69,10 +66,7 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 }));
 router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid category ID" });
-    }
+    const id = req.params.id;
     try {
         const category = yield prisma.category.findUnique({
             where: { id },
@@ -89,10 +83,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 }));
 router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid category ID" });
-    }
+    const id = req.params.id;
     const { name, shortcut } = req.body;
     const category = {
         name,

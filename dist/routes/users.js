@@ -51,6 +51,7 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         password: hashedPassword,
         role: isAdmin ? "ADMIN" : "USER",
     };
+    console.log(user);
     try {
         const createdUser = yield prisma.user.create({
             data: user,
@@ -64,9 +65,10 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id))
+    const id = req.params.id;
+    if (!id) {
         res.status(400).send({ error: "Invalid user ID" });
+    }
     const userFragment = req.body;
     try {
         const updatedUser = yield prisma.user.update({
@@ -80,9 +82,9 @@ router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 }));
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-        res.status(400).json({ error: "Invalid user ID" });
+    const id = req.params.id;
+    if (!id) {
+        res.status(400).send({ error: "Invalid user ID" });
     }
     try {
         yield prisma.user.delete({

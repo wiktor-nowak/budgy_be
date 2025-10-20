@@ -29,11 +29,12 @@ router.get("/", async (_req: Request, res: Response) => {
 });
 
 router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
+  console.log("hi!");
   const { name, type, balance, description } = req.body;
   let account: Omit<Account, "id" | "createdAt" | "updatedAt">;
 
   console.log(name, type, balance, description);
-  console.log(req.user?.id);
+  console.log("In accounts: " + req.user?.id);
 
   const id = req.user?.id;
 
@@ -79,9 +80,11 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 
       console.log(account);
 
-      await prisma.account.create({
+      const acc1 = await prisma.account.create({
         data: account,
       });
+
+      console.log(acc1);
     }
 
     res.status(201).send({

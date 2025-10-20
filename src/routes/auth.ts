@@ -8,13 +8,10 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 
 const connectionString = process.env.DATABASE_URL;
-import type { Secret } from "jsonwebtoken";
 const jwtSecret = process.env.JWT_SECRET as string;
 const router = express.Router();
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
-const SALT = 10;
-const expiryTime = "1h";
 
 // Create token
 const createToken = (user: User) => {
@@ -33,18 +30,27 @@ const loginSchema = z.object({
   password: passwordCheck,
 });
 
-router.post("/", async (req: Request, res: Response): Promise<any> => {
+router.post("/", async (req: Request, res: Response) => {
   const result = loginSchema.safeParse(req.body);
-  if (!result.success) return res.status(400).json(result.error);
+  if (!result.success) {
+    res.status(400).json(result.error);
+    return;
+  }
   const { email, password } = result.data;
 
   try {
     const dbUser = await prisma.user.findUnique({
       where: { email },
     });
-    if (!dbUser) return res.status(400).json({ error: "Invalid credentials" });
+    if (!dbUser) {
+      res.status(400).json({ error: "Invalid credentials" });
+      return;
+    }
     const match = await bcrypt.compare(password, dbUser.password);
-    if (!match) return res.status(400).json({ error: "Invalid credentials" });
+    if (!match) {
+      res.status(400).json({ error: "Invalid credentials" });
+      return;
+    }
 
     const token = createToken(dbUser);
     res
@@ -54,13 +60,8 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
         message: `User ${dbUser.name} successfully authenticated!`,
         token: token,
       });
-    console.log(token);
-    console.log(res);
   } catch (error) {
     res.status(500).send({ error: error });
-    console.error("FUCKEDUP");
-  } finally {
-    return res;
   }
 });
 
@@ -73,20 +74,21 @@ export function authMiddleware(
   res: Response,
   next: NextFunction
 ) {
+  console.log("hello");
   const authHeader = req.headers.authorization;
-  console.log(authHeader);
   if (!authHeader) {
+    console.log("bad thing");
     res.status(401).json({ error: "Missing token" });
   } else {
+    console.log("ELO!");
     const token = authHeader.split(" ")[1];
-    console.log(token);
+
     try {
       const decoded = jwt.verify(token, jwtSecret) as {
         id: string;
       };
       console.log(decoded.id);
       req.user = { id: decoded.id };
-      console.log(req);
       next();
     } catch (err) {
       res.status(403).json({ error: "Invalid token" });

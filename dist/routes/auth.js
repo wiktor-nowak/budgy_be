@@ -25,8 +25,6 @@ const jwtSecret = process.env.JWT_SECRET;
 const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
 const prisma = new client_1.PrismaClient({ adapter });
-const SALT = 10;
-const expiryTime = "1h";
 // Create token
 const createToken = (user) => {
     return jsonwebtoken_1.default.sign({ exp: Math.floor(Date.now() / 1000) + 60 * 60, id: user.id }, jwtSecret);
@@ -41,18 +39,24 @@ const loginSchema = zod_1.z.object({
 });
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = loginSchema.safeParse(req.body);
-    if (!result.success)
-        return res.status(400).json(result.error);
+    if (!result.success) {
+        res.status(400).json(result.error);
+        return;
+    }
     const { email, password } = result.data;
     try {
         const dbUser = yield prisma.user.findUnique({
             where: { email },
         });
-        if (!dbUser)
-            return res.status(400).json({ error: "Invalid credentials" });
+        if (!dbUser) {
+            res.status(400).json({ error: "Invalid credentials" });
+            return;
+        }
         const match = yield bcrypt_1.default.compare(password, dbUser.password);
-        if (!match)
-            return res.status(400).json({ error: "Invalid credentials" });
+        if (!match) {
+            res.status(400).json({ error: "Invalid credentials" });
+            return;
+        }
         const token = createToken(dbUser);
         res
             .status(200)
@@ -61,31 +65,25 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: `User ${dbUser.name} successfully authenticated!`,
             token: token,
         });
-        console.log(token);
-        console.log(res);
     }
     catch (error) {
         res.status(500).send({ error: error });
-        console.error("FUCKEDUP");
-    }
-    finally {
-        return res;
     }
 }));
 function authMiddleware(req, res, next) {
+    console.log("hello");
     const authHeader = req.headers.authorization;
-    console.log(authHeader);
     if (!authHeader) {
+        console.log("bad thing");
         res.status(401).json({ error: "Missing token" });
     }
     else {
+        console.log("ELO!");
         const token = authHeader.split(" ")[1];
-        console.log(token);
         try {
             const decoded = jsonwebtoken_1.default.verify(token, jwtSecret);
             console.log(decoded.id);
             req.user = { id: decoded.id };
-            console.log(req);
             next();
         }
         catch (err) {

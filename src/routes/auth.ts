@@ -53,17 +53,37 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     const token = createToken(dbUser);
-    res
-      .status(200)
-      .cookie("token", token, { httpOnly: true, maxAge: 3600000 })
-      .send({
-        message: `User ${dbUser.name} successfully authenticated!`,
-        token: token,
-      });
+    res.status(200).send({
+      message: `User ${dbUser.name} successfully authenticated!`,
+      token: token,
+    });
   } catch (error) {
     res.status(500).send({ error: error });
   }
 });
+
+router.post(
+  "/refresh",
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: "User not authenticated" });
+    }
+
+    try {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+      } else {
+        const token = createToken(user);
+        res.status(200).send({ token: token });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to refresh token" });
+    }
+  }
+);
 
 router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
@@ -94,25 +114,18 @@ export function authMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  console.log("hello");
   const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    console.log("bad thing");
-    res.status(401).json({ error: "Missing token" });
-  } else {
-    console.log("ELO!");
+  if (authHeader) {
     const token = authHeader.split(" ")[1];
-
     try {
-      const decoded = jwt.verify(token, jwtSecret) as {
-        id: string;
-      };
-      console.log(decoded.id);
+      const decoded = jwt.verify(token, jwtSecret) as { id: string };
       req.user = { id: decoded.id };
       next();
     } catch (err) {
       res.status(403).json({ error: "Invalid token" });
     }
+  } else {
+    res.status(401).json({ error: "Missing token" });
   }
 }
 

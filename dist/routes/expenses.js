@@ -86,6 +86,59 @@ router.patch("/:id", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void
         res.status(500).json({ error: "Failed to update expense" });
     }
 }));
+router.get("/monthly-summary", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    const { year, month } = req.query;
+    if (!year || !month) {
+        res.status(400).json({ error: "Year and month are required" });
+    }
+    try {
+        const result = yield prisma.$queryRaw `
+      SELECT
+        c.id AS "categoryId",
+        c.name AS "categoryName",
+        SUM(e.amount) AS "totalSpent"
+      FROM "Expense" e
+      JOIN "Category" c ON e."categoryId" = c.id
+      WHERE e."accountId" IN (
+        SELECT "id" FROM "Account" WHERE "ownerId" = ${userId}
+        UNION
+        SELECT "accountId" FROM "UserToAccount" WHERE "userId" = ${userId}
+      )
+      AND EXTRACT(YEAR FROM e."createdAt") = ${parseInt(year, 10)}
+      AND EXTRACT(MONTH FROM e."createdAt") = ${parseInt(month, 10)}
+      GROUP BY c.id, c.name
+      ORDER BY "totalSpent" DESC;
+    `;
+        res.status(200).json({ response: result });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch monthly summary" });
+    }
+}));
+router.get("/months", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    try {
+        const result = yield prisma.$queryRaw `
+      SELECT DISTINCT EXTRACT(YEAR FROM "createdAt") AS year, EXTRACT(MONTH FROM "createdAt") AS month
+      FROM "Expense"
+      WHERE "accountId" IN (
+        SELECT "id" FROM "Account" WHERE "ownerId" = ${userId}
+        UNION
+        SELECT "accountId" FROM "UserToAccount" WHERE "userId" = ${userId}
+      )
+      ORDER BY year DESC, month DESC;
+    `;
+        res.status(200).json({ response: result });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch expense months" });
+    }
+}));
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     if (!id) {

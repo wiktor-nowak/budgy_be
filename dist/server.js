@@ -17,7 +17,7 @@ const users_1 = __importDefault(require("./routes/users"));
 const app = (0, express_1.default)();
 const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3003;
 const corsOptions = {
-    origin: "*",
+    origin: "http://localhost:5173",
     methods: "GET,PUT,PATCH,POST,DELETE",
     credentials: true,
     preflightContinue: false,

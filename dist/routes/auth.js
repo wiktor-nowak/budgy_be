@@ -58,16 +58,33 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return;
         }
         const token = createToken(dbUser);
-        res
-            .status(200)
-            .cookie("token", token, { httpOnly: true, maxAge: 3600000 })
-            .send({
+        res.status(200).send({
             message: `User ${dbUser.name} successfully authenticated!`,
             token: token,
         });
     }
     catch (error) {
         res.status(500).send({ error: error });
+    }
+}));
+router.post("/refresh", authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    if (!userId) {
+        res.status(401).json({ error: "User not authenticated" });
+    }
+    try {
+        const user = yield prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+        }
+        else {
+            const token = createToken(user);
+            res.status(200).send({ token: token });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to refresh token" });
     }
 }));
 router.get("/me", authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -91,24 +108,20 @@ router.get("/me", authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0
     }
 }));
 function authMiddleware(req, res, next) {
-    console.log("hello");
     const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        console.log("bad thing");
-        res.status(401).json({ error: "Missing token" });
-    }
-    else {
-        console.log("ELO!");
+    if (authHeader) {
         const token = authHeader.split(" ")[1];
         try {
             const decoded = jsonwebtoken_1.default.verify(token, jwtSecret);
-            console.log(decoded.id);
             req.user = { id: decoded.id };
             next();
         }
         catch (err) {
             res.status(403).json({ error: "Invalid token" });
         }
+    }
+    else {
+        res.status(401).json({ error: "Missing token" });
     }
 }
 exports.default = router;

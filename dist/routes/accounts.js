@@ -33,64 +33,105 @@ router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ error: error });
     }
 }));
-router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
-    console.log("hi!");
-    const { name, type, balance, description } = req.body;
-    let account;
-    console.log(name, type, balance, description);
-    console.log("In accounts: " + ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id));
-    const id = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
+router.get("/main-account", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    if (!userId) {
+        res.status(401).json({ error: "User not authenticated" });
+    }
     try {
-        if (!Object.values(client_1.AccountType).includes(type)) {
-            throw new Error("Type is not properly defined!");
-        }
-        if (type === client_1.AccountType.SHARED) {
-            account = {
-                name,
-                type,
-                description,
-                ownerId: null,
-                balance: client_1.Prisma.Decimal(balance),
-                lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
-            };
-            const accountCreated = yield prisma.account.create({
-                data: account,
-            });
-            if (id) {
-                const u2a = {
-                    userId: id,
-                    accountId: accountCreated.id,
-                };
-                yield prisma.userToAccount.create({
-                    data: u2a,
-                });
-            }
-            else {
-                res.status(404).send({ response: `Id number not found!` });
-            }
-        }
-        else {
-            account = {
-                name,
-                type,
-                description,
-                ownerId: (_d = (_c = req.user) === null || _c === void 0 ? void 0 : _c.id) !== null && _d !== void 0 ? _d : null,
-                balance: client_1.Prisma.Decimal(balance),
-                lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
-            };
-            console.log(account);
-            const acc1 = yield prisma.account.create({
-                data: account,
-            });
-            console.log(acc1);
-        }
-        res.status(201).send({
-            response: `Account ${account.name} created!`,
+        const acc = yield prisma.user.findUnique({
+            where: { id: userId },
+            select: { mainAccountId: true },
         });
+        // if (!user) {
+        //   res.status(404).json({ error: "User not found!" });
+        // } else if (user.mainAccountId) {
+        //   const account = await prisma.account.findUnique({
+        //     where: { id: user.mainAccountId },
+        //   });
+        //   if (!account) {
+        //     res.status(404).json({ error: "Account not found!" });
+        //   }
+        //   res.status(200).json({ response: account });
+        // }
+        if (!acc) {
+            res.status(404).json({ error: "User not found!" });
+        }
+        res.status(200).json({ response: acc });
     }
     catch (error) {
-        res.status(500).send({ error: error });
+        res.status(500).json({ error: "Failed to fetch user profile" });
+    }
+}));
+router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { name, type, balance, description, isFirstAccount } = req.body;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    if (!userId) {
+        res.status(401).json({ error: "User not authenticated" });
+    }
+    else {
+        try {
+            if (!Object.values(client_1.AccountType).includes(type)) {
+                res.status(400).json({ error: "Invalid account type" });
+            }
+            if (type === client_1.AccountType.SHARED) {
+                const newAccount = yield prisma.account.create({
+                    data: {
+                        name,
+                        type,
+                        balance: client_1.Prisma.Decimal(balance),
+                        description,
+                        ownerId: null,
+                        lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
+                    },
+                });
+                yield prisma.userToAccount.create({
+                    data: {
+                        userId: userId,
+                        accountId: newAccount.id,
+                    },
+                });
+                res
+                    .status(201)
+                    .json({ response: `Account ${newAccount.name} created!` });
+            }
+            else {
+                if (type === client_1.AccountType.BANK) {
+                    const newlyCreatedAccount = yield prisma.account.create({
+                        data: {
+                            name,
+                            type,
+                            balance: client_1.Prisma.Decimal(balance),
+                            description,
+                            ownerId: userId,
+                            lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
+                        },
+                    });
+                    yield prisma.user.update({
+                        where: { id: userId },
+                        data: { mainAccountId: newlyCreatedAccount.id },
+                    });
+                }
+                else {
+                    yield prisma.account.create({
+                        data: {
+                            name,
+                            type,
+                            balance: client_1.Prisma.Decimal(balance),
+                            description,
+                            ownerId: userId,
+                            lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
+                        },
+                    });
+                }
+                res.status(201).json({ response: `Account ${name} created!` });
+            }
+        }
+        catch (error) {
+            res.status(500).json({ error: "Failed to create account" });
+        }
     }
 }));
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -163,9 +204,14 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(500).json({ error: error });
     }
 }));
-router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.patch("/:id", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const id = req.params.id;
     const { name, balance, description } = req.body;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    if (!userId) {
+        res.status(401).json({ error: "User not authenticated" });
+    }
     try {
         const updatedAccount = yield prisma.account.update({
             where: { id },
@@ -180,7 +226,7 @@ router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
     catch (error) {
-        res.status(500).send({ error: error });
+        res.status(500).send({ error: "Failed to update account" });
     }
 }));
 exports.default = router;

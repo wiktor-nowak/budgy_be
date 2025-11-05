@@ -32,10 +32,13 @@ const loginSchema = z.object({
 
 router.post("/", async (req: Request, res: Response) => {
   const result = loginSchema.safeParse(req.body);
+  console.log(result);
   if (!result.success) {
+    console.log("o");
     res.status(400).json(result.error);
     return;
   }
+  console.log("login");
   const { email, password } = result.data;
 
   try {

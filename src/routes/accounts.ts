@@ -1,6 +1,5 @@
 import express, { Response, Request } from "express";
 import {
-  Account,
   PrismaClient,
   Prisma,
   UserToAccount,
@@ -28,70 +27,109 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
-router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
-  console.log("hi!");
-  const { name, type, balance, description } = req.body;
-  let account: Omit<Account, "id" | "createdAt" | "updatedAt">;
-
-  console.log(name, type, balance, description);
-  console.log("In accounts: " + req.user?.id);
-
-  const id = req.user?.id;
-
-  try {
-    if (!Object.values(AccountType).includes(type)) {
-      throw new Error("Type is not properly defined!");
+router.get(
+  "/main-account",
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: "User not authenticated" });
     }
 
-    if (type === AccountType.SHARED) {
-      account = {
-        name,
-        type,
-        description,
-        ownerId: null,
-        balance: Prisma.Decimal(balance),
-        lastMonthlyBalance: Prisma.Decimal(0.0),
-      };
-
-      const accountCreated = await prisma.account.create({
-        data: account,
+    try {
+      const acc = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { mainAccountId: true },
       });
-
-      if (id) {
-        const u2a: Omit<UserToAccount, "assignedAt"> = {
-          userId: id,
-          accountId: accountCreated.id,
-        };
-        await prisma.userToAccount.create({
-          data: u2a,
-        });
-      } else {
-        res.status(404).send({ response: `Id number not found!` });
+      // if (!user) {
+      //   res.status(404).json({ error: "User not found!" });
+      // } else if (user.mainAccountId) {
+      //   const account = await prisma.account.findUnique({
+      //     where: { id: user.mainAccountId },
+      //   });
+      //   if (!account) {
+      //     res.status(404).json({ error: "Account not found!" });
+      //   }
+      //   res.status(200).json({ response: account });
+      // }
+      if (!acc) {
+        res.status(404).json({ error: "User not found!" });
       }
-    } else {
-      account = {
-        name,
-        type,
-        description,
-        ownerId: req.user?.id ?? null,
-        balance: Prisma.Decimal(balance),
-        lastMonthlyBalance: Prisma.Decimal(0.0),
-      };
-
-      console.log(account);
-
-      const acc1 = await prisma.account.create({
-        data: account,
-      });
-
-      console.log(acc1);
+      res.status(200).json({ response: acc });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user profile" });
     }
+  }
+);
 
-    res.status(201).send({
-      response: `Account ${account.name} created!`,
-    });
-  } catch (error) {
-    res.status(500).send({ error: error });
+router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
+  const { name, type, balance, description, isFirstAccount } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    res.status(401).json({ error: "User not authenticated" });
+  } else {
+    try {
+      if (!Object.values(AccountType).includes(type)) {
+        res.status(400).json({ error: "Invalid account type" });
+      }
+
+      if (type === AccountType.SHARED) {
+        const newAccount = await prisma.account.create({
+          data: {
+            name,
+            type,
+            balance: Prisma.Decimal(balance),
+            description,
+            ownerId: null,
+            lastMonthlyBalance: Prisma.Decimal(0.0),
+          },
+        });
+
+        await prisma.userToAccount.create({
+          data: {
+            userId: userId,
+            accountId: newAccount.id,
+          },
+        });
+
+        res
+          .status(201)
+          .json({ response: `Account ${newAccount.name} created!` });
+      } else {
+        if (type === AccountType.BANK) {
+          const newlyCreatedAccount = await prisma.account.create({
+            data: {
+              name,
+              type,
+              balance: Prisma.Decimal(balance),
+              description,
+              ownerId: userId,
+              lastMonthlyBalance: Prisma.Decimal(0.0),
+            },
+          });
+          await prisma.user.update({
+            where: { id: userId },
+            data: { mainAccountId: newlyCreatedAccount.id },
+          });
+        } else {
+          await prisma.account.create({
+            data: {
+              name,
+              type,
+              balance: Prisma.Decimal(balance),
+              description,
+              ownerId: userId,
+              lastMonthlyBalance: Prisma.Decimal(0.0),
+            },
+          });
+        }
+
+        res.status(201).json({ response: `Account ${name} created!` });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create account" });
+    }
   }
 });
 
@@ -172,26 +210,34 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.patch("/:id", async (req: Request, res: Response) => {
-  const id = req.params.id;
+router.patch(
+  "/:id",
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    const id = req.params.id;
+    const { name, balance, description } = req.body;
+    const userId = req.user?.id;
 
-  const { name, balance, description } = req.body;
+    if (!userId) {
+      res.status(401).json({ error: "User not authenticated" });
+    }
 
-  try {
-    const updatedAccount = await prisma.account.update({
-      where: { id },
-      data: {
-        name,
-        balance: Prisma.Decimal(balance),
-        description,
-      },
-    });
-    res.status(200).send({
-      response: `Account ${updatedAccount.name} successfully updated.`,
-    });
-  } catch (error) {
-    res.status(500).send({ error: error });
+    try {
+      const updatedAccount = await prisma.account.update({
+        where: { id },
+        data: {
+          name,
+          balance: Prisma.Decimal(balance),
+          description,
+        },
+      });
+      res.status(200).send({
+        response: `Account ${updatedAccount.name} successfully updated.`,
+      });
+    } catch (error) {
+      res.status(500).send({ error: "Failed to update account" });
+    }
   }
-});
+);
 
 export default router;

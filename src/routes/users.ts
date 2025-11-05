@@ -2,6 +2,7 @@ import express, { Response, Request } from "express";
 import { PrismaClient, User } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
+import { authMiddleware, AuthRequest } from "./auth";
 
 const connectionString = process.env.DATABASE_URL;
 const router = express.Router();
@@ -31,7 +32,7 @@ router.post("/", async (req: Request, res: Response) => {
   const hashedPassword = await bcrypt.hash(password, SALT);
   const user: Omit<
     User,
-    "id" | "createdAt" | "updatedAt" | "name" | "surname"
+    "id" | "createdAt" | "updatedAt" | "name" | "surname" | "mainAccountId"
   > = {
     username,
     email,
@@ -57,7 +58,10 @@ router.patch("/:id", async (req: Request, res: Response) => {
     res.status(400).send({ error: "Invalid user ID" });
   }
   const userFragment: Partial<
-    Pick<User, "name" | "email" | "password" | "role">
+    Pick<
+      User,
+      "name" | "email" | "password" | "role" | "surname" | "mainAccountId"
+    >
   > = req.body;
 
   try {

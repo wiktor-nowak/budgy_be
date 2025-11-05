@@ -39,10 +39,13 @@ const loginSchema = zod_1.z.object({
 });
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = loginSchema.safeParse(req.body);
+    console.log(result);
     if (!result.success) {
+        console.log("o");
         res.status(400).json(result.error);
         return;
     }
+    console.log("login");
     const { email, password } = result.data;
     try {
         const dbUser = yield prisma.user.findUnique({

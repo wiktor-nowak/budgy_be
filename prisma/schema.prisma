@@ -27,6 +27,7 @@ model User {
   //Optional
   name String?
   surname String?
+  mainAccountId String?
 
   // Relations
   ownedAccounts Account[]

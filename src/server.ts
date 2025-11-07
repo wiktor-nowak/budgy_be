@@ -1,16 +1,16 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
-import { z } from "zod";
 
 import accountsRoutes from "./routes/accounts";
-import authRoutes from "./routes/auth";
-// import balanceRoutes from "./routes/balance";
+import authenticationRoutes from "./routes/authentication";
+import balance from "./routes/balance";
 import categoryRoutes from "./routes/categories";
 import expensesRoutes from "./routes/expenses";
-import userRoutes from "./routes/users";
+import users from "./routes/users";
+
+import errorHandler from "./middleware/error-handler";
 
 const app = express();
 const PORT = process.env.PORT ?? 3003;
@@ -150,11 +150,13 @@ app.use(cookieParser());
 //   });
 
 app.use("/api/accounts", accountsRoutes);
-app.use("/api/auth", authRoutes);
-// app.use("/api/balance", balanceRoutes);
+app.use("/api/authentication", authenticationRoutes);
+app.use("/api/balance", balance);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/expenses", expensesRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/users", users);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Express server running on port ${PORT}`);

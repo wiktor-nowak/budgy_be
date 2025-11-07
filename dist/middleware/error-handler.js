@@ -1,0 +1,30 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = errorHandler;
+const utils_1 = require("../utils");
+const config_1 = __importDefault(require("../config"));
+const CustomError_1 = __importDefault(require("../errors/CustomError"));
+function errorHandler(error, req, res, next) {
+    if (res.headersSent || config_1.default.debug) {
+        next(error);
+        return;
+    }
+    if (error instanceof CustomError_1.default) {
+        res.status(error.statusCode).json({
+            error: {
+                message: error.message,
+                code: error.code,
+            },
+        });
+        return;
+    }
+    res.status(500).json({
+        error: {
+            message: (0, utils_1.getErrorMessage)(error) ||
+                "An error occured. View logs for more details.",
+        },
+    });
+}

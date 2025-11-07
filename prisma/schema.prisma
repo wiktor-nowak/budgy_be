@@ -25,8 +25,8 @@ model User {
   updatedAt DateTime @updatedAt
   
   //Optional
-  name String?
-  surname String?
+  name String @default("")
+  surname String @default("")
   mainAccountId String?
 
   // Relations
@@ -67,7 +67,7 @@ model UserToAccount {
   @@id([userId, accountId])
 }
 
-model MonthlyBalance {
+model MonthlyBalance { // Month/Balance
   id String @id @default(uuid()) @db.Uuid
 
   balance Decimal  @db.Decimal(12, 2)
@@ -88,6 +88,8 @@ model Expense {
   description String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Balance after.
   
   // Relations
   account Account @relation(fields: [accountId], references: [id])
@@ -114,6 +116,7 @@ model Category {
 enum Role {
   USER
   ADMIN
+  VISITOR
 }
 
 enum AccountType {

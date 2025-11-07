@@ -15,7 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
-const auth_1 = require("./auth");
+const authentication_1 = require("../middleware/authentication");
+const authorization_1 = require("../middleware/authorization");
 const connectionString = process.env.DATABASE_URL;
 const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
@@ -37,7 +38,8 @@ const getAllExpenses = () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(expenses);
     return expenses;
 });
-router.get("/", auth_1.authMiddleware, (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// -----
+router.get("/", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const expenses = yield getAllExpenses();
         res.status(200).send({ response: expenses });
@@ -46,7 +48,7 @@ router.get("/", auth_1.authMiddleware, (_req, res) => __awaiter(void 0, void 0, 
         res.status(500).json({ error: error });
     }
 }));
-router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { amount, accountId, categoryId, description } = req.body;
     if (!amount || !accountId || !categoryId) {
         res.status(400).json({ error: "Missing required fields" });
@@ -67,7 +69,7 @@ router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, 
         res.status(500).json({ error: "Failed to create expense" });
     }
 }));
-router.patch("/:id", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.patch("/:id", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { amount, accountId, categoryId, description } = req.body;
     try {
@@ -86,7 +88,7 @@ router.patch("/:id", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void
         res.status(500).json({ error: "Failed to update expense" });
     }
 }));
-router.get("/monthly-summary", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/monthly-summary", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     const { year, month } = req.query;
@@ -118,7 +120,7 @@ router.get("/monthly-summary", auth_1.authMiddleware, (req, res) => __awaiter(vo
         res.status(500).json({ error: "Failed to fetch monthly summary" });
     }
 }));
-router.get("/months", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/months", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     try {
@@ -139,10 +141,10 @@ router.get("/months", auth_1.authMiddleware, (req, res) => __awaiter(void 0, voi
         res.status(500).json({ error: "Failed to fetch expense months" });
     }
 }));
-router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:id", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     if (!id) {
-        res.status(400).send({ error: "Invalid user ID" });
+        res.status(400).send({ error: "Invalid expense ID" });
     }
     try {
         yield prisma.expense.delete({

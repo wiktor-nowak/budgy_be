@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
+const authentication_1 = require("../middleware/authentication");
+const authorization_1 = require("../middleware/authorization");
 const connectionString = process.env.DATABASE_URL;
 const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
@@ -23,7 +25,7 @@ const getAllCategories = () => __awaiter(void 0, void 0, void 0, function* () {
     const categories = yield prisma.category.findMany();
     return categories;
 });
-router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const categories = yield getAllCategories();
         res.status(200).send({ response: categories });
@@ -32,7 +34,7 @@ router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ error: error });
     }
 }));
-router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, shortcut } = req.body;
     const category = {
         name,
@@ -50,7 +52,7 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).send({ error: error });
     }
 }));
-router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:id", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     console.log(id);
     try {
@@ -65,7 +67,7 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(404).json({ error: "Category not found or already deleted." });
     }
 }));
-router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/:id", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     try {
         const category = yield prisma.category.findUnique({
@@ -82,7 +84,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(500).json({ error: error });
     }
 }));
-router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.patch("/:id", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     const { name, shortcut } = req.body;
     const category = {

@@ -15,7 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
-const auth_1 = require("./auth");
+const authentication_1 = require("../middleware/authentication");
+const authorization_1 = require("../middleware/authorization");
 const connectionString = process.env.DATABASE_URL;
 const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
@@ -24,7 +25,7 @@ const getAllAccounts = () => __awaiter(void 0, void 0, void 0, function* () {
     const accounts = yield prisma.account.findMany();
     return accounts;
 });
-router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", authentication_1.authenticate, (0, authorization_1.authorize)(["ADMIN"]), (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accounts = yield getAllAccounts();
         res.status(200).send({ response: accounts });
@@ -33,7 +34,7 @@ router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ error: error });
     }
 }));
-router.get("/main-account", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/main-account", authentication_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     if (!userId) {
@@ -64,7 +65,7 @@ router.get("/main-account", auth_1.authMiddleware, (req, res) => __awaiter(void 
         res.status(500).json({ error: "Failed to fetch user profile" });
     }
 }));
-router.post("/", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", authentication_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { name, type, balance, description, isFirstAccount } = req.body;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
@@ -148,7 +149,7 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(404).json({ error: "Account not found or already deleted." });
     }
 }));
-router.get("/my-accounts", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/my-accounts", authentication_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     if (!userId) {
@@ -204,7 +205,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(500).json({ error: error });
     }
 }));
-router.patch("/:id", auth_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.patch("/:id", authentication_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const id = req.params.id;
     const { name, balance, description } = req.body;

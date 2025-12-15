@@ -1,12 +1,9 @@
-import express, { Response, Request } from "express";
+import express, { Response, Request, NextFunction } from "express";
 import { PrismaClient, User } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
-import {
-  authenticate,
-  AuthenticationRequest,
-} from "../../middleware/authentication";
-import { authorize } from "../../middleware/authorization";
+// import { authenticateUser } from "../../middleware/authentication";
+// import { authorize } from "../../middleware/authorization";
 import EntityNotFoundError from "../../errors/EntityNotFoundError";
 
 const connectionString = process.env.DATABASE_URL;
@@ -30,35 +27,54 @@ const getAllUsers1 = async () => {
 };
 
 export const getAllUsers = async (
-  _req: AuthenticationRequest,
-  res: Response
+  req: Request,
+  res: Response,
+  next: NextFunction,
 ) => {
   try {
     const users = await getAllUsers1();
+    res.status(200).send({ response: users });
+  } catch (error) {
     throw new EntityNotFoundError({
-      message: "Elo, elo 320!",
+      message: "Elo, elo 320! Cannot fetch users.",
       statusCode: 404,
       code: "ERR_NF",
     });
-    console.log(users);
-    res.status(200).send({ response: users });
-  } catch (error) {
-    res.status(500).json({ error: error });
   }
 };
 
-export const getUserDetails = async (
-  req: AuthenticationRequest,
-  res: Response
+export const testUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
 ) => {
-  const userId = req.user?.id;
+  try {
+    res.status(200).send({
+      response: {
+        dummy: "test user endpoint works",
+      },
+    });
+  } catch (error) {
+    throw new EntityNotFoundError({
+      message: "Elo, elo 320! Cannot fetch users.",
+      statusCode: 404,
+      code: "ERR_NF",
+    });
+  }
+};
+
+export const getUserDetails = async (req: Request, res: Response) => {
+  const userId = req.auth?.payload;
+
+  console.log(userId);
+
   if (!userId) {
     res.status(401).json({ error: "User not authenticated" });
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId?.sub },
       select: {
         id: true,
         username: true,
@@ -101,13 +117,13 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-export const changeUser = async (req: AuthenticationRequest, res: Response) => {
+export const changeUser = async (req: Request, res: Response) => {
   const id = req.params.id;
   if (!id) {
     res.status(400).send({ error: "Invalid user ID" });
     return;
   }
-  if (req.user?.id !== id) {
+  if (req.auth?.payload.sub !== id) {
     res.status(403).send({ error: "Unauthorized" });
     return;
   }
@@ -126,10 +142,7 @@ export const changeUser = async (req: AuthenticationRequest, res: Response) => {
   }
 };
 
-export const changePassword = async (
-  req: AuthenticationRequest,
-  res: Response
-) => {
+export const changePassword = async (req: Request, res: Response) => {
   const id = req.params.id;
   const { oldPassword, newPassword } = req.body;
 
@@ -137,7 +150,7 @@ export const changePassword = async (
     res.status(400).send({ error: "Invalid user ID" });
     return;
   }
-  if (req.user?.id !== id) {
+  if (req.auth?.payload.sub !== id) {
     res.status(403).send({ error: "Unauthorized" });
     return;
   }
@@ -167,13 +180,13 @@ export const changePassword = async (
   }
 };
 
-export const deleteUser = async (req: AuthenticationRequest, res: Response) => {
+export const deleteUser = async (req: Request, res: Response) => {
   const id = req.params.id;
   if (!id) {
     res.status(400).send({ error: "Invalid user ID" });
     return;
   }
-  if (req.user?.id !== id) {
+  if (req.auth?.payload.sub !== id) {
     res.status(403).send({ error: "Unauthorized" });
     return;
   }

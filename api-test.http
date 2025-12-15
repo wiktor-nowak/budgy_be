@@ -1,0 +1,18 @@
+### Health check
+
+GET http://localhost:3003/api/users/test HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJ6WEJzLTNVaUJMWU5zMFVkYUVxOCJ9.eyJpc3MiOiJodHRwczovL2Rldi1jMm1xNHk3NzFqMzNrN204LmV1LmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw2OTJkODQzNjU2MGI5MzQ4ZjAxNDMwOGUiLCJhdWQiOlsiYnVkZ3ktYXBpIiwiaHR0cHM6Ly9kZXYtYzJtcTR5NzcxajMzazdtOC5ldS5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNzY1MTkxNzU0LCJleHAiOjE3NjUxOTg5NTQsInNjb3BlIjoib3BlbmlkIGVtYWlsIiwiYXpwIjoiOHlIVWJxemEzZnhMeEFOd3FHbVBjM0F6N0luQ3BHNFEifQ.iZh9ocHT_LVDR-Whtg2Ej1LgJqJZH6VXFJK2bD-25aGWBo7UjYrV-c-3hkzXrWKuTQBTvxtLtS-53U5yWRK-7tCL4YiezI-WFV8Au8dFYXk6JSUnZWoCuJBl9kfAD8oYhOshd3fb28aCVgSQRXi_gSWQb4Hf6AX7xtjX0CW5aLJ-HixQ3MWsKX0UQ3-pmWvBtNWW9Q1sQhI1JpoUVww-WWbAu4z5hXA74LU98zlNkowJy1ILvm7YResVwhrwQn4t4OK9TDzlUikLVcyeOPzqO3QKe-YR4VhixaKWLCS15HjR1luaBkoeFx0p_UJYXdNIl2yP6E0JNVKEqp6X8DXkOQ
+
+### GET tasks
+GET http://localhost:3003/api/users/test HTTP/1.1
+
+
+### GET task by ID
+GET http://localhost:3003/v1/tasks/cm34k39zh0002ii6chxkr0x1o HTTP/1.1
+Authorization: Bearer 
+
+### GET project by ID
+GET http://localhost:3000/v1/projects/1 HTTP/1.1
+
+### GET project's tasks
+GET http://localhost:3000/v1/projects/1/tasks HTTP/1.1

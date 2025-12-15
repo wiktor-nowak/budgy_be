@@ -16,7 +16,6 @@ const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
 const authentication_1 = require("../middleware/authentication");
-const authorization_1 = require("../middleware/authorization");
 const connectionString = process.env.DATABASE_URL;
 const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
@@ -25,7 +24,7 @@ const getAllAccounts = () => __awaiter(void 0, void 0, void 0, function* () {
     const accounts = yield prisma.account.findMany();
     return accounts;
 });
-router.get("/", authentication_1.authenticate, (0, authorization_1.authorize)(["ADMIN"]), (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", authentication_1.authenticateUser, (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accounts = yield getAllAccounts();
         res.status(200).send({ response: accounts });
@@ -34,9 +33,8 @@ router.get("/", authentication_1.authenticate, (0, authorization_1.authorize)(["
         res.status(500).json({ error: error });
     }
 }));
-router.get("/main-account", authentication_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+router.get("/main-account", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = "";
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
     }
@@ -65,10 +63,9 @@ router.get("/main-account", authentication_1.authenticate, (req, res) => __await
         res.status(500).json({ error: "Failed to fetch user profile" });
     }
 }));
-router.post("/", authentication_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+router.post("/", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, type, balance, description, isFirstAccount } = req.body;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    const userId = "";
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
     }
@@ -149,9 +146,8 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(404).json({ error: "Account not found or already deleted." });
     }
 }));
-router.get("/my-accounts", authentication_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+router.get("/my-accounts", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = "";
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
     }
@@ -205,11 +201,11 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(500).json({ error: error });
     }
 }));
-router.patch("/:id", authentication_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+router.patch("/:id", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     const { name, balance, description } = req.body;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    // const userId = req.user?.id;
+    const userId = "";
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
     }

@@ -1,12 +1,10 @@
 import { Response, Request, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { User } from "@prisma/client";
+import config from "../config";
+import AuthenticationError from "../errors/AuthenticationError";
 
 const jwtSecret = process.env.JWT_SECRET as string;
-
-export interface AuthenticationRequest extends Request {
-  user?: { id: string; role: string };
-}
 
 // Create token
 export const createToken = (user: User) => {
@@ -16,29 +14,35 @@ export const createToken = (user: User) => {
       id: user.id,
       role: user.role,
     },
-    jwtSecret
+    jwtSecret,
   );
 };
 
-export function authenticate(
-  req: AuthenticationRequest,
+export const authenticateUser = (
+  req: Request,
   res: Response,
-  next: NextFunction
-) {
+  next: NextFunction,
+) => {
   const authHeader = req.headers.authorization;
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
-    try {
-      const decoded = jwt.verify(token, jwtSecret) as {
-        id: string;
-        role: string;
-      };
-      req.user = { id: decoded.id, role: decoded.role };
-      next();
-    } catch (err) {
-      res.status(403).json({ error: "Invalid token" });
-    }
-  } else {
-    res.status(401).json({ error: "Missing token" });
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new AuthenticationError({
+      message: "Authorization header missing or malformed.",
+      statusCode: 401,
+      code: "ERR_AUTH",
+    });
   }
-}
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, config.appSecret);
+    req.auth = { payload: decoded as JwtPayload, token };
+    next();
+  } catch (error) {
+    throw new AuthenticationError({
+      message: "You are not authorized to perform this operation.",
+      statusCode: 403,
+      code: "ERR_AUTH",
+    });
+  }
+};

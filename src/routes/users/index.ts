@@ -1,6 +1,5 @@
 import express, { Router } from "express";
-import { authenticate } from "../../middleware/authentication";
-import { authorize } from "../../middleware/authorization";
+import { authenticateUser } from "../../middleware/authentication";
 import { ROLES } from "../../constants";
 import {
   changePassword,
@@ -9,15 +8,17 @@ import {
   deleteUser,
   getAllUsers,
   getUserDetails,
+  testUser,
 } from "./users";
 
 const users: Router = express.Router();
 
-users.get("/", authenticate, authorize([ROLES.ADMIN]), getAllUsers);
-users.get("/current-user", authenticate, getUserDetails);
+users.get("/", authenticateUser, getAllUsers);
+users.get("/test", authenticateUser, testUser);
+users.get("/current-user", authenticateUser, getUserDetails);
 users.post("/", createUser);
-users.patch("/:id", authenticate, changeUser);
-users.patch("/:id/password", authenticate, changePassword);
-users.delete("/id", authenticate, authorize([ROLES.ADMIN]), deleteUser);
+users.patch("/:id", authenticateUser, changeUser);
+users.patch("/:id/password", authenticateUser, changePassword);
+users.delete("/:id", authenticateUser, deleteUser);
 
 export default users;

@@ -7,6 +7,7 @@ exports.default = errorHandler;
 const utils_1 = require("../utils");
 const config_1 = __importDefault(require("../config"));
 const CustomError_1 = __importDefault(require("../errors/CustomError"));
+const express_oauth2_jwt_bearer_1 = require("express-oauth2-jwt-bearer");
 function errorHandler(error, req, res, next) {
     if (res.headersSent || config_1.default.debug) {
         next(error);
@@ -17,6 +18,15 @@ function errorHandler(error, req, res, next) {
             error: {
                 message: error.message,
                 code: error.code,
+            },
+        });
+        return;
+    }
+    if (error instanceof express_oauth2_jwt_bearer_1.UnauthorizedError) {
+        res.status(error.statusCode).json({
+            error: {
+                message: error.message,
+                code: "code" in error ? error.code : "ERR_AUTH",
             },
         });
         return;

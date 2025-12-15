@@ -16,7 +16,6 @@ const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
 const authentication_1 = require("../middleware/authentication");
-const authorization_1 = require("../middleware/authorization");
 const connectionString = process.env.DATABASE_URL;
 const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
@@ -39,7 +38,7 @@ const getAllExpenses = () => __awaiter(void 0, void 0, void 0, function* () {
     return expenses;
 });
 // -----
-router.get("/", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", authentication_1.authenticateUser, (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const expenses = yield getAllExpenses();
         res.status(200).send({ response: expenses });
@@ -48,7 +47,7 @@ router.get("/", authentication_1.authenticate, (0, authorization_1.authorize)(["
         res.status(500).json({ error: error });
     }
 }));
-router.post("/", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { amount, accountId, categoryId, description } = req.body;
     if (!amount || !accountId || !categoryId) {
         res.status(400).json({ error: "Missing required fields" });
@@ -69,7 +68,7 @@ router.post("/", authentication_1.authenticate, (0, authorization_1.authorize)([
         res.status(500).json({ error: "Failed to create expense" });
     }
 }));
-router.patch("/:id", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.patch("/:id", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { amount, accountId, categoryId, description } = req.body;
     try {
@@ -88,9 +87,8 @@ router.patch("/:id", authentication_1.authenticate, (0, authorization_1.authoriz
         res.status(500).json({ error: "Failed to update expense" });
     }
 }));
-router.get("/monthly-summary", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+router.get("/monthly-summary", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = "";
     const { year, month } = req.query;
     if (!year || !month) {
         res.status(400).json({ error: "Year and month are required" });
@@ -120,9 +118,9 @@ router.get("/monthly-summary", authentication_1.authenticate, (0, authorization_
         res.status(500).json({ error: "Failed to fetch monthly summary" });
     }
 }));
-router.get("/months", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+router.get("/months", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = "";
+    // const userId = req.user?.id;
     try {
         const result = yield prisma.$queryRaw `
       SELECT DISTINCT EXTRACT(YEAR FROM "createdAt") AS year, EXTRACT(MONTH FROM "createdAt") AS month
@@ -141,7 +139,7 @@ router.get("/months", authentication_1.authenticate, (0, authorization_1.authori
         res.status(500).json({ error: "Failed to fetch expense months" });
     }
 }));
-router.delete("/:id", authentication_1.authenticate, (0, authorization_1.authorize)(["USER", "VISITOR", "ADMIN"]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:id", authentication_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     if (!id) {
         res.status(400).send({ error: "Invalid expense ID" });

@@ -4,11 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 
-import {
-  authenticate,
-  AuthenticationRequest,
-  createToken,
-} from "../middleware/authentication";
+import { createToken } from "../middleware/authentication";
 
 const connectionString = process.env.DATABASE_URL;
 const router = express.Router();

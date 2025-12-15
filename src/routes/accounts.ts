@@ -1,10 +1,7 @@
 import express, { Response, Request } from "express";
 import { PrismaClient, Prisma, AccountType } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import {
-  authenticate,
-  AuthenticationRequest,
-} from "../middleware/authentication";
+import { authenticateUser } from "../middleware/authentication";
 import { authorize } from "../middleware/authorization";
 
 const connectionString = process.env.DATABASE_URL;
@@ -17,25 +14,20 @@ const getAllAccounts = async () => {
   return accounts;
 };
 
-router.get(
-  "/",
-  authenticate,
-  authorize(["ADMIN"]),
-  async (_req: AuthenticationRequest, res: Response) => {
-    try {
-      const accounts = await getAllAccounts();
-      res.status(200).send({ response: accounts });
-    } catch (error) {
-      res.status(500).json({ error: error });
-    }
+router.get("/", authenticateUser, async (_req: Request, res: Response) => {
+  try {
+    const accounts = await getAllAccounts();
+    res.status(200).send({ response: accounts });
+  } catch (error) {
+    res.status(500).json({ error: error });
   }
-);
+});
 
 router.get(
   "/main-account",
-  authenticate,
-  async (req: AuthenticationRequest, res: Response) => {
-    const userId = req.user?.id;
+  authenticateUser,
+  async (req: Request, res: Response) => {
+    const userId = "";
     if (!userId) {
       res.status(401).json({ error: "User not authenticated" });
     }
@@ -63,83 +55,79 @@ router.get(
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch user profile" });
     }
-  }
+  },
 );
 
-router.post(
-  "/",
-  authenticate,
-  async (req: AuthenticationRequest, res: Response) => {
-    const { name, type, balance, description, isFirstAccount } = req.body;
-    const userId = req.user?.id;
+router.post("/", authenticateUser, async (req: Request, res: Response) => {
+  const { name, type, balance, description, isFirstAccount } = req.body;
+  const userId = "";
 
-    if (!userId) {
-      res.status(401).json({ error: "User not authenticated" });
-    } else {
-      try {
-        if (!Object.values(AccountType).includes(type)) {
-          res.status(400).json({ error: "Invalid account type" });
-        }
+  if (!userId) {
+    res.status(401).json({ error: "User not authenticated" });
+  } else {
+    try {
+      if (!Object.values(AccountType).includes(type)) {
+        res.status(400).json({ error: "Invalid account type" });
+      }
 
-        if (type === AccountType.SHARED) {
-          const newAccount = await prisma.account.create({
+      if (type === AccountType.SHARED) {
+        const newAccount = await prisma.account.create({
+          data: {
+            name,
+            type,
+            balance: Prisma.Decimal(balance),
+            description,
+            ownerId: null,
+            lastMonthlyBalance: Prisma.Decimal(0.0),
+          },
+        });
+
+        await prisma.userToAccount.create({
+          data: {
+            userId: userId,
+            accountId: newAccount.id,
+          },
+        });
+
+        res
+          .status(201)
+          .json({ response: `Account ${newAccount.name} created!` });
+      } else {
+        if (type === AccountType.BANK) {
+          const newlyCreatedAccount = await prisma.account.create({
             data: {
               name,
               type,
               balance: Prisma.Decimal(balance),
               description,
-              ownerId: null,
+              ownerId: userId,
               lastMonthlyBalance: Prisma.Decimal(0.0),
             },
           });
-
-          await prisma.userToAccount.create({
+          await prisma.user.update({
+            where: { id: userId },
+            data: { mainAccountId: newlyCreatedAccount.id },
+          });
+        } else {
+          await prisma.account.create({
             data: {
-              userId: userId,
-              accountId: newAccount.id,
+              name,
+              type,
+              balance: Prisma.Decimal(balance),
+              description,
+              ownerId: userId,
+              lastMonthlyBalance: Prisma.Decimal(0.0),
             },
           });
-
-          res
-            .status(201)
-            .json({ response: `Account ${newAccount.name} created!` });
-        } else {
-          if (type === AccountType.BANK) {
-            const newlyCreatedAccount = await prisma.account.create({
-              data: {
-                name,
-                type,
-                balance: Prisma.Decimal(balance),
-                description,
-                ownerId: userId,
-                lastMonthlyBalance: Prisma.Decimal(0.0),
-              },
-            });
-            await prisma.user.update({
-              where: { id: userId },
-              data: { mainAccountId: newlyCreatedAccount.id },
-            });
-          } else {
-            await prisma.account.create({
-              data: {
-                name,
-                type,
-                balance: Prisma.Decimal(balance),
-                description,
-                ownerId: userId,
-                lastMonthlyBalance: Prisma.Decimal(0.0),
-              },
-            });
-          }
-
-          res.status(201).json({ response: `Account ${name} created!` });
         }
-      } catch (error) {
-        res.status(500).json({ error: "Failed to create account" });
+
+        res.status(201).json({ response: `Account ${name} created!` });
       }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create account" });
     }
   }
-);
+});
 
 router.delete("/:id", async (req: Request, res: Response) => {
   const id = req.params.id;
@@ -159,9 +147,9 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
 router.get(
   "/my-accounts",
-  authenticate,
-  async (req: AuthenticationRequest, res: Response) => {
-    const userId = req.user?.id;
+  authenticateUser,
+  async (req: Request, res: Response) => {
+    const userId = "";
     if (!userId) {
       res.status(401).json({ error: "User not authenticated" });
     }
@@ -182,7 +170,7 @@ router.get(
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch user accounts" });
     }
-  }
+  },
 );
 
 router.get("/:id", async (req: Request, res: Response) => {
@@ -218,34 +206,31 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.patch(
-  "/:id",
-  authenticate,
-  async (req: AuthenticationRequest, res: Response) => {
-    const id = req.params.id;
-    const { name, balance, description } = req.body;
-    const userId = req.user?.id;
+router.patch("/:id", authenticateUser, async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { name, balance, description } = req.body;
+  // const userId = req.user?.id;
+  const userId = "";
 
-    if (!userId) {
-      res.status(401).json({ error: "User not authenticated" });
-    }
-
-    try {
-      const updatedAccount = await prisma.account.update({
-        where: { id },
-        data: {
-          name,
-          balance: Prisma.Decimal(balance),
-          description,
-        },
-      });
-      res.status(200).send({
-        response: `Account ${updatedAccount.name} successfully updated.`,
-      });
-    } catch (error) {
-      res.status(500).send({ error: "Failed to update account" });
-    }
+  if (!userId) {
+    res.status(401).json({ error: "User not authenticated" });
   }
-);
+
+  try {
+    const updatedAccount = await prisma.account.update({
+      where: { id },
+      data: {
+        name,
+        balance: Prisma.Decimal(balance),
+        description,
+      },
+    });
+    res.status(200).send({
+      response: `Account ${updatedAccount.name} successfully updated.`,
+    });
+  } catch (error) {
+    res.status(500).send({ error: "Failed to update account" });
+  }
+});
 
 export default router;

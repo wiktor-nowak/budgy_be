@@ -12,11 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.changePassword = exports.changeUser = exports.createUser = exports.getUserDetails = exports.getAllUsers = void 0;
+exports.deleteUser = exports.changePassword = exports.changeUser = exports.createUser = exports.getUserDetails = exports.testUser = exports.getAllUsers = void 0;
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+// import { authenticateUser } from "../../middleware/authentication";
+// import { authorize } from "../../middleware/authorization";
 const EntityNotFoundError_1 = __importDefault(require("../../errors/EntityNotFoundError"));
 const connectionString = process.env.DATABASE_URL;
 const router = express_1.default.Router();
@@ -36,31 +38,47 @@ const getAllUsers1 = () => __awaiter(void 0, void 0, void 0, function* () {
     });
     return users;
 });
-const getAllUsers = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield getAllUsers1();
-        throw new EntityNotFoundError_1.default({
-            message: "Elo, elo 320!",
-            statusCode: 404,
-            code: "ERR_NF",
-        });
-        console.log(users);
         res.status(200).send({ response: users });
     }
     catch (error) {
-        res.status(500).json({ error: error });
+        throw new EntityNotFoundError_1.default({
+            message: "Elo, elo 320! Cannot fetch users.",
+            statusCode: 404,
+            code: "ERR_NF",
+        });
     }
 });
 exports.getAllUsers = getAllUsers;
+const testUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        res.status(200).send({
+            response: {
+                dummy: "test user endpoint works",
+            },
+        });
+    }
+    catch (error) {
+        throw new EntityNotFoundError_1.default({
+            message: "Elo, elo 320! Cannot fetch users.",
+            statusCode: 404,
+            code: "ERR_NF",
+        });
+    }
+});
+exports.testUser = testUser;
 const getUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    const userId = (_a = req.auth) === null || _a === void 0 ? void 0 : _a.payload;
+    console.log(userId);
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
     }
     try {
         const user = yield prisma.user.findUnique({
-            where: { id: userId },
+            where: { id: userId === null || userId === void 0 ? void 0 : userId.sub },
             select: {
                 id: true,
                 username: true,
@@ -112,7 +130,7 @@ const changeUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(400).send({ error: "Invalid user ID" });
         return;
     }
-    if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) !== id) {
+    if (((_a = req.auth) === null || _a === void 0 ? void 0 : _a.payload.sub) !== id) {
         res.status(403).send({ error: "Unauthorized" });
         return;
     }
@@ -137,7 +155,7 @@ const changePassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(400).send({ error: "Invalid user ID" });
         return;
     }
-    if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) !== id) {
+    if (((_a = req.auth) === null || _a === void 0 ? void 0 : _a.payload.sub) !== id) {
         res.status(403).send({ error: "Unauthorized" });
         return;
     }
@@ -171,7 +189,7 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(400).send({ error: "Invalid user ID" });
         return;
     }
-    if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) !== id) {
+    if (((_a = req.auth) === null || _a === void 0 ? void 0 : _a.payload.sub) !== id) {
         res.status(403).send({ error: "Unauthorized" });
         return;
     }

@@ -1,10 +1,7 @@
 import express, { Response, Request } from "express";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import {
-  authenticate,
-  AuthenticationRequest,
-} from "../middleware/authentication";
+import { authenticateUser } from "../middleware/authentication";
 import { authorize } from "../middleware/authorization";
 
 const connectionString = process.env.DATABASE_URL;
@@ -32,80 +29,64 @@ const getAllExpenses = async () => {
 
 // -----
 
-router.get(
-  "/",
-  authenticate,
-  authorize(["USER", "VISITOR", "ADMIN"]),
-  async (_req: AuthenticationRequest, res: Response) => {
-    try {
-      const expenses = await getAllExpenses();
-      res.status(200).send({ response: expenses });
-    } catch (error) {
-      res.status(500).json({ error: error });
-    }
+router.get("/", authenticateUser, async (_req: Request, res: Response) => {
+  try {
+    const expenses = await getAllExpenses();
+    res.status(200).send({ response: expenses });
+  } catch (error) {
+    res.status(500).json({ error: error });
   }
-);
+});
 
-router.post(
-  "/",
-  authenticate,
-  authorize(["USER", "VISITOR", "ADMIN"]),
-  async (req: AuthenticationRequest, res: Response) => {
-    const { amount, accountId, categoryId, description } = req.body;
+router.post("/", authenticateUser, async (req: Request, res: Response) => {
+  const { amount, accountId, categoryId, description } = req.body;
 
-    if (!amount || !accountId || !categoryId) {
-      res.status(400).json({ error: "Missing required fields" });
-    }
-
-    try {
-      const newExpense = await prisma.expense.create({
-        data: {
-          amount,
-          accountId,
-          categoryId,
-          description,
-          shared: false,
-        },
-      });
-
-      res.status(201).json({ response: newExpense });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to create expense" });
-    }
+  if (!amount || !accountId || !categoryId) {
+    res.status(400).json({ error: "Missing required fields" });
   }
-);
 
-router.patch(
-  "/:id",
-  authenticate,
-  authorize(["USER", "VISITOR", "ADMIN"]),
-  async (req: AuthenticationRequest, res: Response) => {
-    const { id } = req.params;
-    const { amount, accountId, categoryId, description } = req.body;
+  try {
+    const newExpense = await prisma.expense.create({
+      data: {
+        amount,
+        accountId,
+        categoryId,
+        description,
+        shared: false,
+      },
+    });
 
-    try {
-      const updatedExpense = await prisma.expense.update({
-        where: { id },
-        data: {
-          amount,
-          accountId,
-          categoryId,
-          description,
-        },
-      });
-      res.status(200).json({ response: updatedExpense });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update expense" });
-    }
+    res.status(201).json({ response: newExpense });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create expense" });
   }
-);
+});
+
+router.patch("/:id", authenticateUser, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { amount, accountId, categoryId, description } = req.body;
+
+  try {
+    const updatedExpense = await prisma.expense.update({
+      where: { id },
+      data: {
+        amount,
+        accountId,
+        categoryId,
+        description,
+      },
+    });
+    res.status(200).json({ response: updatedExpense });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update expense" });
+  }
+});
 
 router.get(
   "/monthly-summary",
-  authenticate,
-  authorize(["USER", "VISITOR", "ADMIN"]),
-  async (req: AuthenticationRequest, res: Response) => {
-    const userId = req.user?.id;
+  authenticateUser,
+  async (req: Request, res: Response) => {
+    const userId = "";
     const { year, month } = req.query;
 
     if (!year || !month) {
@@ -136,18 +117,15 @@ router.get(
       console.error(error);
       res.status(500).json({ error: "Failed to fetch monthly summary" });
     }
-  }
+  },
 );
 
-router.get(
-  "/months",
-  authenticate,
-  authorize(["USER", "VISITOR", "ADMIN"]),
-  async (req: AuthenticationRequest, res: Response) => {
-    const userId = req.user?.id;
+router.get("/months", authenticateUser, async (req: Request, res: Response) => {
+  const userId = "";
+  // const userId = req.user?.id;
 
-    try {
-      const result: { year: number; month: number }[] = await prisma.$queryRaw`
+  try {
+    const result: { year: number; month: number }[] = await prisma.$queryRaw`
       SELECT DISTINCT EXTRACT(YEAR FROM "createdAt") AS year, EXTRACT(MONTH FROM "createdAt") AS month
       FROM "Expense"
       WHERE "accountId" IN (
@@ -158,36 +136,30 @@ router.get(
       ORDER BY year DESC, month DESC;
     `;
 
-      res.status(200).json({ response: result });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Failed to fetch expense months" });
-    }
+    res.status(200).json({ response: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch expense months" });
   }
-);
+});
 
-router.delete(
-  "/:id",
-  authenticate,
-  authorize(["USER", "VISITOR", "ADMIN"]),
-  async (req: AuthenticationRequest, res: Response) => {
-    const id = req.params.id;
-    if (!id) {
-      res.status(400).send({ error: "Invalid expense ID" });
-    }
-
-    try {
-      await prisma.expense.delete({
-        where: { id },
-      });
-
-      res
-        .status(200)
-        .json({ message: `Expense with ID ${id} deleted successfully.` });
-    } catch (error) {
-      res.status(404).json({ error: "Expense not found or already deleted." });
-    }
+router.delete("/:id", authenticateUser, async (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (!id) {
+    res.status(400).send({ error: "Invalid expense ID" });
   }
-);
+
+  try {
+    await prisma.expense.delete({
+      where: { id },
+    });
+
+    res
+      .status(200)
+      .json({ message: `Expense with ID ${id} deleted successfully.` });
+  } catch (error) {
+    res.status(404).json({ error: "Expense not found or already deleted." });
+  }
+});
 
 export default router;

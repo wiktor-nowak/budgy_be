@@ -1,13 +1,13 @@
-import express from "express";
+import express, { Router } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 
 import accountsRoutes from "./routes/accounts";
 import authenticationRoutes from "./routes/authentication";
-import balance from "./routes/balance";
 import categoryRoutes from "./routes/categories";
 import expensesRoutes from "./routes/expenses";
+import balance from "./routes/balance";
 import users from "./routes/users";
 
 import errorHandler from "./middleware/error-handler";
@@ -15,7 +15,8 @@ import errorHandler from "./middleware/error-handler";
 const app = express();
 const PORT = process.env.PORT ?? 3003;
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: "*",
+  // origin: "http://localhost:5173",
   methods: "GET,PUT,PATCH,POST,DELETE",
   credentials: true,
   preflightContinue: false,

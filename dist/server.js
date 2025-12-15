@@ -10,15 +10,16 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const accounts_1 = __importDefault(require("./routes/accounts"));
 const authentication_1 = __importDefault(require("./routes/authentication"));
-const balance_1 = __importDefault(require("./routes/balance"));
 const categories_1 = __importDefault(require("./routes/categories"));
 const expenses_1 = __importDefault(require("./routes/expenses"));
+const balance_1 = __importDefault(require("./routes/balance"));
 const users_1 = __importDefault(require("./routes/users"));
 const error_handler_1 = __importDefault(require("./middleware/error-handler"));
 const app = (0, express_1.default)();
 const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3003;
 const corsOptions = {
-    origin: "http://localhost:5173",
+    origin: "*",
+    // origin: "http://localhost:5173",
     methods: "GET,PUT,PATCH,POST,DELETE",
     credentials: true,
     preflightContinue: false,

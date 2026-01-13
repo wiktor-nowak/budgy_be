@@ -17,7 +17,7 @@ const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
 const bcrypt_1 = __importDefault(require("bcrypt"));
-// import { authenticateUser } from "../../middleware/authentication";
+// import { authMiddleware } from "../../middleware/authentication";
 // import { authorize } from "../../middleware/authorization";
 const EntityNotFoundError_1 = __importDefault(require("../../errors/EntityNotFoundError"));
 const connectionString = process.env.DATABASE_URL;
@@ -25,22 +25,18 @@ const router = express_1.default.Router();
 const adapter = new adapter_pg_1.PrismaPg({ connectionString });
 const prisma = new client_1.PrismaClient({ adapter });
 const SALT = 10;
-const getAllUsers1 = () => __awaiter(void 0, void 0, void 0, function* () {
-    const users = yield prisma.user.findMany({
-        select: {
-            id: true,
-            username: true,
-            email: true,
-            name: true,
-            surname: true,
-            role: true,
-        },
-    });
-    return users;
-});
 const getAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const users = yield getAllUsers1();
+        const users = yield prisma.user.findMany({
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                name: true,
+                surname: true,
+                role: true,
+            },
+        });
         res.status(200).send({ response: users });
     }
     catch (error) {

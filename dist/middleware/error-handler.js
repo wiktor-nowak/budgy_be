@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = errorHandler;
-const utils_1 = require("../utils");
+const errors_1 = require("../service/errors");
 const config_1 = __importDefault(require("../config"));
 const CustomError_1 = __importDefault(require("../errors/CustomError"));
 const express_oauth2_jwt_bearer_1 = require("express-oauth2-jwt-bearer");
@@ -33,7 +33,7 @@ function errorHandler(error, req, res, next) {
     }
     res.status(500).json({
         error: {
-            message: (0, utils_1.getErrorMessage)(error) ||
+            message: (0, errors_1.getErrorMessage)(error) ||
                 "An error occured. View logs for more details.",
         },
     });

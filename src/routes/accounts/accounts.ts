@@ -1,64 +1,64 @@
-import express, { Response, Request } from "express";
+import { Response, Request, NextFunction } from "express";
 import { PrismaClient, Prisma, AccountType } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { authenticateUser } from "../middleware/authentication";
-import { authorize } from "../middleware/authorization";
 
 const connectionString = process.env.DATABASE_URL;
-const router = express.Router();
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-const getAllAccounts = async () => {
-  const accounts = await prisma.account.findMany();
-  return accounts;
-};
-
-router.get("/", authenticateUser, async (_req: Request, res: Response) => {
+export const getAllAccounts = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const accounts = await getAllAccounts();
+    const accounts = await prisma.account.findMany();
     res.status(200).send({ response: accounts });
   } catch (error) {
     res.status(500).json({ error: error });
   }
-});
+};
 
-router.get(
-  "/main-account",
-  authenticateUser,
-  async (req: Request, res: Response) => {
-    const userId = "";
-    if (!userId) {
-      res.status(401).json({ error: "User not authenticated" });
+export const getMainAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = "";
+  if (!userId) {
+    res.status(401).json({ error: "User not authenticated" });
+  }
+
+  try {
+    const acc = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { mainAccountId: true },
+    });
+    // if (!user) {
+    //   res.status(404).json({ error: "User not found!" });
+    // } else if (user.mainAccountId) {
+    //   const account = await prisma.account.findUnique({
+    //     where: { id: user.mainAccountId },
+    //   });
+    //   if (!account) {
+    //     res.status(404).json({ error: "Account not found!" });
+    //   }
+    //   res.status(200).json({ response: account });
+    // }
+    if (!acc) {
+      res.status(404).json({ error: "User not found!" });
     }
+    res.status(200).json({ response: acc });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user profile" });
+  }
+};
 
-    try {
-      const acc = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { mainAccountId: true },
-      });
-      // if (!user) {
-      //   res.status(404).json({ error: "User not found!" });
-      // } else if (user.mainAccountId) {
-      //   const account = await prisma.account.findUnique({
-      //     where: { id: user.mainAccountId },
-      //   });
-      //   if (!account) {
-      //     res.status(404).json({ error: "Account not found!" });
-      //   }
-      //   res.status(200).json({ response: account });
-      // }
-      if (!acc) {
-        res.status(404).json({ error: "User not found!" });
-      }
-      res.status(200).json({ response: acc });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch user profile" });
-    }
-  },
-);
-
-router.post("/", authenticateUser, async (req: Request, res: Response) => {
+export const createAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const { name, type, balance, description, isFirstAccount } = req.body;
   const userId = "";
 
@@ -127,9 +127,13 @@ router.post("/", authenticateUser, async (req: Request, res: Response) => {
       res.status(500).json({ error: "Failed to create account" });
     }
   }
-});
+};
 
-router.delete("/:id", async (req: Request, res: Response) => {
+export const deleteAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const id = req.params.id;
 
   try {
@@ -143,37 +147,41 @@ router.delete("/:id", async (req: Request, res: Response) => {
   } catch (error) {
     res.status(404).json({ error: "Account not found or already deleted." });
   }
-});
+};
 
-router.get(
-  "/my-accounts",
-  authenticateUser,
-  async (req: Request, res: Response) => {
-    const userId = "";
-    if (!userId) {
-      res.status(401).json({ error: "User not authenticated" });
-    }
+export const getMyAccounts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = "";
+  if (!userId) {
+    res.status(401).json({ error: "User not authenticated" });
+  }
 
-    try {
-      const sharedAccountLinks = await prisma.userToAccount.findMany({
-        where: { userId: userId },
-        select: { accountId: true },
-      });
-      const sharedAccountIds = sharedAccountLinks.map((link) => link.accountId);
+  try {
+    const sharedAccountLinks = await prisma.userToAccount.findMany({
+      where: { userId: userId },
+      select: { accountId: true },
+    });
+    const sharedAccountIds = sharedAccountLinks.map((link) => link.accountId);
 
-      const accounts = await prisma.account.findMany({
-        where: {
-          OR: [{ ownerId: userId }, { id: { in: sharedAccountIds } }],
-        },
-      });
-      res.status(200).send({ response: accounts });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch user accounts" });
-    }
-  },
-);
+    const accounts = await prisma.account.findMany({
+      where: {
+        OR: [{ ownerId: userId }, { id: { in: sharedAccountIds } }],
+      },
+    });
+    res.status(200).send({ response: accounts });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user accounts" });
+  }
+};
 
-router.get("/:id", async (req: Request, res: Response) => {
+export const getAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const id = req.params.id;
 
   try {
@@ -204,9 +212,13 @@ router.get("/:id", async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: error });
   }
-});
+};
 
-router.patch("/:id", authenticateUser, async (req: Request, res: Response) => {
+export const editAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const id = req.params.id;
   const { name, balance, description } = req.body;
   // const userId = req.user?.id;
@@ -231,6 +243,4 @@ router.patch("/:id", authenticateUser, async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).send({ error: "Failed to update account" });
   }
-});
-
-export default router;
+};

@@ -1,29 +1,29 @@
-import express, { Response, Request } from "express";
+import express, { Response, Request, NextFunction } from "express";
 import { Category, PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { authenticateUser } from "../middleware/authentication";
-import { authorize } from "../middleware/authorization";
 
 const connectionString = process.env.DATABASE_URL;
-const router = express.Router();
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-const getAllCategories = async () => {
-  const categories = await prisma.category.findMany();
-  return categories;
-};
-
-router.get("/", authenticateUser, async (_req: Request, res: Response) => {
+export const getAllCategories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const categories = await getAllCategories();
+    const categories = await prisma.category.findMany();
     res.status(200).send({ response: categories });
   } catch (error) {
     res.status(500).json({ error: error });
   }
-});
+};
 
-router.post("/", authenticateUser, async (req: Request, res: Response) => {
+export const addCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const { name, shortcut } = req.body;
   const category: Omit<Category, "id" | "createdAt" | "updatedAt"> = {
     name,
@@ -40,26 +40,13 @@ router.post("/", authenticateUser, async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).send({ error: error });
   }
-});
+};
 
-router.delete("/:id", authenticateUser, async (req: Request, res: Response) => {
-  const id = req.params.id;
-  console.log(id);
-
-  try {
-    await prisma.category.delete({
-      where: { id },
-    });
-
-    res
-      .status(200)
-      .json({ message: `Category with ID ${id} deleted successfully.` });
-  } catch (error) {
-    res.status(404).json({ error: "Category not found or already deleted." });
-  }
-});
-
-router.get("/:id", authenticateUser, async (req: Request, res: Response) => {
+export const getCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const id = req.params.id;
 
   try {
@@ -74,9 +61,30 @@ router.get("/:id", authenticateUser, async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: error });
   }
-});
+};
 
-router.patch("/:id", authenticateUser, async (req: Request, res: Response) => {
+export const deleteCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const id = req.params.id;
+  console.log(id);
+
+  try {
+    await prisma.category.delete({
+      where: { id },
+    });
+
+    res
+      .status(200)
+      .json({ message: `Category with ID ${id} deleted successfully.` });
+  } catch (error) {
+    res.status(404).json({ error: "Category not found or already deleted." });
+  }
+};
+
+export const editCategory = async (req: Request, res: Response) => {
   const id = req.params.id;
 
   const { name, shortcut } = req.body;
@@ -96,6 +104,4 @@ router.patch("/:id", authenticateUser, async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).send({ error: error });
   }
-});
-
-export default router;
+};

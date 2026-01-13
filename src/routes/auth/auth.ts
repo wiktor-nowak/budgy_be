@@ -4,7 +4,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 
-import { createToken } from "../middleware/authentication";
+// import { createToken } from "../middleware/authentication";
+
+const createToken = (dbUser: unknown) => {
+  console.log(dbUser);
+};
 
 const connectionString = process.env.DATABASE_URL;
 const router = express.Router();
@@ -21,7 +25,7 @@ const loginSchema = z.object({
   password: passwordCheck,
 });
 
-router.post("/", async (req: Request, res: Response) => {
+export const check = async (req: Request, res: Response) => {
   const requestParsed = loginSchema.safeParse(req.body);
   if (!requestParsed.success) {
     res.status(400).json(requestParsed.error);
@@ -50,6 +54,4 @@ router.post("/", async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).send({ error: error });
   }
-});
-
-export default router;
+};

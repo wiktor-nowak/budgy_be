@@ -2,7 +2,7 @@ import express, { Response, Request, NextFunction } from "express";
 import { PrismaClient, User } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
-// import { authenticateUser } from "../../middleware/authentication";
+// import { authMiddleware } from "../../middleware/authentication";
 // import { authorize } from "../../middleware/authorization";
 import EntityNotFoundError from "../../errors/EntityNotFoundError";
 
@@ -12,27 +12,22 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 const SALT = 10;
 
-const getAllUsers1 = async () => {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      name: true,
-      surname: true,
-      role: true,
-    },
-  });
-  return users;
-};
-
 export const getAllUsers = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const users = await getAllUsers1();
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        name: true,
+        surname: true,
+        role: true,
+      },
+    });
     res.status(200).send({ response: users });
   } catch (error) {
     throw new EntityNotFoundError({

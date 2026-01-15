@@ -1,9 +1,10 @@
 import express, { Router } from "express";
-import { authMiddleware } from "../../middleware/authentication";
-import { check } from "./auth";
+import { loginHandler, logoutHandler, refreshHandler } from "./auth";
 
 const auth: Router = express.Router();
 
-auth.post("/", authMiddleware, check);
+auth.post("/refresh", refreshHandler);
+auth.post("/login", loginHandler);
+auth.post("/logout", logoutHandler);
 
 export default auth;

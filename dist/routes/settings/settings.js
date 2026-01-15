@@ -1,16 +1,4 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllSettings = void 0;
-const getAllSettings = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+export const getAllSettings = async (req, res, next) => {
     try {
         res.status(200).send({
             response: "Hi",
@@ -19,5 +7,4 @@ const getAllSettings = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     catch (error) {
         res.status(500).send({ error: error });
     }
-});
-exports.getAllSettings = getAllSettings;
+};

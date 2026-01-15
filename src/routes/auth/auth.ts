@@ -1,57 +1,112 @@
-import express, { Response, Request } from "express";
-import { PrismaClient, User } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import bcrypt from "bcrypt";
-import { z } from "zod";
+import { Response, Request } from "express";
 
-// import { createToken } from "../middleware/authentication";
+import {
+  createRefreshTokenRecord,
+  generateRefreshToken,
+  hashRefreshToken,
+  revokeAllUserRefreshTokens,
+  revokeRefreshToken,
+  rotateRefreshToken,
+  setExpiresInDays,
+  validateRefreshToken,
+} from "../../service/refreshToken";
+import { signAccessToken } from "../../service/accessToken";
+import { parseLoginRequest } from "../../service/credentials";
+import { LoginCredentials } from "../../types/credentials";
+import { validateUserCredentials } from "../users/users";
 
-const createToken = (dbUser: unknown) => {
-  console.log(dbUser);
-};
-
-const connectionString = process.env.DATABASE_URL;
-const router = express.Router();
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
-
-const passwordRegex = /^(?=.*[0-9])(?=.*[@!#$%^&*])/;
-// TODO Password check is done twice, on frontend and on backend!
-const passwordCheck = z.string().min(6).max(20).regex(passwordRegex, {
-  message: "Password must contain at least one digit and one special character",
-});
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: passwordCheck,
-});
-
-export const check = async (req: Request, res: Response) => {
-  const requestParsed = loginSchema.safeParse(req.body);
-  if (!requestParsed.success) {
-    res.status(400).json(requestParsed.error);
-    return;
-  }
-  const { email, password } = requestParsed.data;
+export async function loginHandler(req: Request, res: Response) {
   try {
-    const dbUser = await prisma.user.findUnique({
-      where: { email },
-    });
-    if (!dbUser) {
-      res.status(400).json({ error: "Invalid credentials" });
-      return;
-    }
-    const match = await bcrypt.compare(password, dbUser.password);
-    if (!match) {
-      res.status(400).json({ error: "Invalid credentials" });
-      return;
-    }
+    const credentials: LoginCredentials = parseLoginRequest(req.body);
+    const validatedUserId = await validateUserCredentials(credentials);
 
-    const token = createToken(dbUser);
+    // issue new access token
+    const accessToken = signAccessToken({
+      sub: validatedUserId,
+    });
+
+    //generate new refresh token
+    const newRefreshToken = generateRefreshToken();
+    const newHashedRefreshToken = hashRefreshToken(newRefreshToken);
+    await createRefreshTokenRecord(
+      newHashedRefreshToken,
+      validatedUserId,
+      setExpiresInDays(30),
+    );
+
+    res.cookie("refresh_token", newRefreshToken, {
+      httpOnly: true,
+      // secure: true // set while on server
+      sameSite: "lax",
+      path: "/auth/refresh",
+    });
+
     res.status(200).send({
-      message: `User ${dbUser.name} successfully authenticated!`,
-      token: token,
+      message: `User ${validatedUserId} successfully logged in!`,
+      token: accessToken,
     });
   } catch (error) {
     res.status(500).send({ error: error });
   }
-};
+}
+
+export async function logoutHandler(req: Request, res: Response) {
+  const rawToken = req.cookies?.refresh_token;
+  if (!rawToken) {
+    return res.sendStatus(401); // add sending message!
+  }
+  const tokenHash = hashRefreshToken(rawToken);
+  revokeRefreshToken(tokenHash);
+  res.clearCookie("refresh_token", {
+    httpOnly: true,
+    // secure: true // set while on server
+    sameSite: "lax",
+    path: "/auth/refresh",
+  });
+}
+
+export async function refreshHandler(req: Request, res: Response) {
+  const rawToken = req.cookies?.refresh_token;
+  if (!rawToken) {
+    return res.sendStatus(401); // add sending message!
+  }
+  const tokenHash = hashRefreshToken(rawToken);
+  const existing = await validateRefreshToken(tokenHash);
+  if (!existing) {
+    return res.sendStatus(401);
+  }
+
+  //generate new refresh token
+  const newRefreshToken = generateRefreshToken();
+  const newHashedRefreshToken = hashRefreshToken(newRefreshToken);
+
+  try {
+    await rotateRefreshToken(
+      tokenHash,
+      newHashedRefreshToken,
+      existing.userId,
+      setExpiresInDays(30),
+    );
+  } catch (error) {
+    await revokeAllUserRefreshTokens(existing.userId);
+    return res.sendStatus(401);
+  }
+
+  // issue new access token
+  const accessToken = signAccessToken({
+    sub: existing.userId,
+  });
+
+  // set new refresh cookie
+  res.cookie("refresh_token", newRefreshToken, {
+    httpOnly: true,
+    // secure: true // set while on server
+    sameSite: "lax",
+    path: "/auth/refresh",
+  });
+
+  return res.status(200).send({
+    message: `User ${existing.userId} successfully authenticated!`,
+    token: accessToken,
+  });
+}

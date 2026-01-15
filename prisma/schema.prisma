@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   =  "../node_modules/.prisma/client"
+  output   =  "./generated"
 }
 
 datasource db {
@@ -30,6 +30,7 @@ model User {
   // Relations
   ownedAccounts Account[]
   sharedAccounts UserToAccount[]
+  refreshTokens RefreshToken[]
 
   @@unique([id])
 }
@@ -109,6 +110,19 @@ model Category {
   expenses Expense[]
 
   @@unique([id])
+}
+
+model RefreshToken {
+  tokenHash   String   @id @db.Text
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  replacedBy  String?  @db.Text
+  revoked     Boolean  @default(false)
+
+  @@unique([tokenHash])
 }
 
 enum Role {

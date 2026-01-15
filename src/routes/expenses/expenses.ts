@@ -1,11 +1,5 @@
-import express, { Response, Request } from "express";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-
-const connectionString = process.env.DATABASE_URL;
-const router = express.Router();
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+import { Response, Request } from "express";
+import { prisma } from "../../lib/prisma";
 
 export const getAllExpenses = async (_req: Request, res: Response) => {
   try {
@@ -110,8 +104,9 @@ export const createExpense = async (req: Request, res: Response) => {
 };
 
 export const changeExpense = async (req: Request, res: Response) => {
-  const { id } = req.params;
   const { amount, accountId, categoryId, description } = req.body;
+
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
   try {
     const updatedExpense = await prisma.expense.update({
@@ -130,7 +125,7 @@ export const changeExpense = async (req: Request, res: Response) => {
 };
 
 export const deleteExpense = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   if (!id) {
     res.status(400).send({ error: "Invalid expense ID" });
   }

@@ -1,15 +1,12 @@
-import express, { Response, Request, NextFunction } from "express";
-import { PrismaClient, User } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { Response, Request, NextFunction } from "express";
 import bcrypt from "bcrypt";
-// import { authMiddleware } from "../../middleware/authentication";
-// import { authorize } from "../../middleware/authorization";
 import EntityNotFoundError from "../../errors/EntityNotFoundError";
+import { prisma } from "../../lib/prisma";
+import { User } from "../../../prisma/generated/client";
+import { LoginCredentials, RegisterCredentials } from "../../types/credentials";
+import { parseRegisterRequest } from "../../service/credentials";
+import { ROLES } from "../../constants";
 
-const connectionString = process.env.DATABASE_URL;
-const router = express.Router();
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
 const SALT = 10;
 
 export const getAllUsers = async (
@@ -89,17 +86,18 @@ export const getUserDetails = async (req: Request, res: Response) => {
 };
 
 export const createUser = async (req: Request, res: Response) => {
-  const { username, email, password, name, surname } = req.body;
+  const { username, email, password, name, surname } = parseRegisterRequest(
+    req.body,
+  );
   const hashedPassword = await bcrypt.hash(password, SALT);
-  const user: Omit<User, "id" | "createdAt" | "updatedAt" | "mainAccountId"> = {
+  const user: RegisterCredentials = {
     username,
     email,
     password: hashedPassword,
-    role: "USER", // Always assign USER role for new registrations
-    name,
-    surname,
+    role: ROLES.USER,
+    name: name ?? undefined,
+    surname: surname ?? undefined,
   };
-  console.log(user);
   try {
     const createdUser = await prisma.user.create({
       data: user,
@@ -107,13 +105,15 @@ export const createUser = async (req: Request, res: Response) => {
     res
       .status(201)
       .send({ response: `User ${createdUser.username} successfully created.` });
+
+    // add sending e-mail with registration link
   } catch (error) {
     res.status(500).send({ error: error });
   }
 };
 
 export const changeUser = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   if (!id) {
     res.status(400).send({ error: "Invalid user ID" });
     return;
@@ -138,7 +138,7 @@ export const changeUser = async (req: Request, res: Response) => {
 };
 
 export const changePassword = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const { oldPassword, newPassword } = req.body;
 
   if (!id) {
@@ -176,7 +176,7 @@ export const changePassword = async (req: Request, res: Response) => {
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   if (!id) {
     res.status(400).send({ error: "Invalid user ID" });
     return;
@@ -197,4 +197,21 @@ export const deleteUser = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(404).json({ error: "User not found or already deleted." });
   }
+};
+
+export const validateUserCredentials = async ({
+  email,
+  password,
+}: LoginCredentials) => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+  if (!user) {
+    throw new Error("Invalid credentials"); // actually user does not exist but we don't want to inform attacker about it.
+  }
+  const match = await bcrypt.compare(password, user.password); //can be extracted to separate function
+  if (!match) {
+    throw new Error("Invalid credentials"); // actual mismatching credentials
+  }
+  return user.id;
 };

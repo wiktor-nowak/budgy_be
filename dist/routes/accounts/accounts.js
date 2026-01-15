@@ -1,37 +1,24 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.editAccount = exports.getAccount = exports.getMyAccounts = exports.deleteAccount = exports.createAccount = exports.getMainAccount = exports.getAllAccounts = void 0;
-const client_1 = require("@prisma/client");
-const adapter_pg_1 = require("@prisma/adapter-pg");
+import { PrismaClient, Prisma, AccountType } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 const connectionString = process.env.DATABASE_URL;
-const adapter = new adapter_pg_1.PrismaPg({ connectionString });
-const prisma = new client_1.PrismaClient({ adapter });
-const getAllAccounts = (_req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
+export const getAllAccounts = async (_req, res, next) => {
     try {
-        const accounts = yield prisma.account.findMany();
+        const accounts = await prisma.account.findMany();
         res.status(200).send({ response: accounts });
     }
     catch (error) {
         res.status(500).json({ error: error });
     }
-});
-exports.getAllAccounts = getAllAccounts;
-const getMainAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const getMainAccount = async (req, res, next) => {
     const userId = "";
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
     }
     try {
-        const acc = yield prisma.user.findUnique({
+        const acc = await prisma.user.findUnique({
             where: { id: userId },
             select: { mainAccountId: true },
         });
@@ -54,9 +41,8 @@ const getMainAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     catch (error) {
         res.status(500).json({ error: "Failed to fetch user profile" });
     }
-});
-exports.getMainAccount = getMainAccount;
-const createAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const createAccount = async (req, res, next) => {
     const { name, type, balance, description, isFirstAccount } = req.body;
     const userId = "";
     if (!userId) {
@@ -64,21 +50,21 @@ const createAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
     else {
         try {
-            if (!Object.values(client_1.AccountType).includes(type)) {
+            if (!Object.values(AccountType).includes(type)) {
                 res.status(400).json({ error: "Invalid account type" });
             }
-            if (type === client_1.AccountType.SHARED) {
-                const newAccount = yield prisma.account.create({
+            if (type === AccountType.SHARED) {
+                const newAccount = await prisma.account.create({
                     data: {
                         name,
                         type,
-                        balance: client_1.Prisma.Decimal(balance),
+                        balance: Prisma.Decimal(balance),
                         description,
                         ownerId: null,
-                        lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
+                        lastMonthlyBalance: Prisma.Decimal(0.0),
                     },
                 });
-                yield prisma.userToAccount.create({
+                await prisma.userToAccount.create({
                     data: {
                         userId: userId,
                         accountId: newAccount.id,
@@ -89,31 +75,31 @@ const createAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                     .json({ response: `Account ${newAccount.name} created!` });
             }
             else {
-                if (type === client_1.AccountType.BANK) {
-                    const newlyCreatedAccount = yield prisma.account.create({
+                if (type === AccountType.BANK) {
+                    const newlyCreatedAccount = await prisma.account.create({
                         data: {
                             name,
                             type,
-                            balance: client_1.Prisma.Decimal(balance),
+                            balance: Prisma.Decimal(balance),
                             description,
                             ownerId: userId,
-                            lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
+                            lastMonthlyBalance: Prisma.Decimal(0.0),
                         },
                     });
-                    yield prisma.user.update({
+                    await prisma.user.update({
                         where: { id: userId },
                         data: { mainAccountId: newlyCreatedAccount.id },
                     });
                 }
                 else {
-                    yield prisma.account.create({
+                    await prisma.account.create({
                         data: {
                             name,
                             type,
-                            balance: client_1.Prisma.Decimal(balance),
+                            balance: Prisma.Decimal(balance),
                             description,
                             ownerId: userId,
-                            lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
+                            lastMonthlyBalance: Prisma.Decimal(0.0),
                         },
                     });
                 }
@@ -124,12 +110,11 @@ const createAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             res.status(500).json({ error: "Failed to create account" });
         }
     }
-});
-exports.createAccount = createAccount;
-const deleteAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const deleteAccount = async (req, res, next) => {
     const id = req.params.id;
     try {
-        yield prisma.account.delete({
+        await prisma.account.delete({
             where: { id },
         });
         res
@@ -139,20 +124,19 @@ const deleteAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     catch (error) {
         res.status(404).json({ error: "Account not found or already deleted." });
     }
-});
-exports.deleteAccount = deleteAccount;
-const getMyAccounts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const getMyAccounts = async (req, res, next) => {
     const userId = "";
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
     }
     try {
-        const sharedAccountLinks = yield prisma.userToAccount.findMany({
+        const sharedAccountLinks = await prisma.userToAccount.findMany({
             where: { userId: userId },
             select: { accountId: true },
         });
         const sharedAccountIds = sharedAccountLinks.map((link) => link.accountId);
-        const accounts = yield prisma.account.findMany({
+        const accounts = await prisma.account.findMany({
             where: {
                 OR: [{ ownerId: userId }, { id: { in: sharedAccountIds } }],
             },
@@ -162,12 +146,11 @@ const getMyAccounts = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     catch (error) {
         res.status(500).json({ error: "Failed to fetch user accounts" });
     }
-});
-exports.getMyAccounts = getMyAccounts;
-const getAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const getAccount = async (req, res, next) => {
     const id = req.params.id;
     try {
-        const account = yield prisma.account.findUnique({
+        const account = await prisma.account.findUnique({
             where: { id },
             include: {
                 owner: {
@@ -196,9 +179,8 @@ const getAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     catch (error) {
         res.status(500).json({ error: error });
     }
-});
-exports.getAccount = getAccount;
-const editAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const editAccount = async (req, res, next) => {
     const id = req.params.id;
     const { name, balance, description } = req.body;
     // const userId = req.user?.id;
@@ -207,11 +189,11 @@ const editAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         res.status(401).json({ error: "User not authenticated" });
     }
     try {
-        const updatedAccount = yield prisma.account.update({
+        const updatedAccount = await prisma.account.update({
             where: { id },
             data: {
                 name,
-                balance: client_1.Prisma.Decimal(balance),
+                balance: Prisma.Decimal(balance),
                 description,
             },
         });
@@ -222,5 +204,4 @@ const editAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     catch (error) {
         res.status(500).send({ error: "Failed to update account" });
     }
-});
-exports.editAccount = editAccount;
+};

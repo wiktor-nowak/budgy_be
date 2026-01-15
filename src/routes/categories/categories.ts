@@ -1,10 +1,6 @@
-import express, { Response, Request, NextFunction } from "express";
-import { Category, PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-
-const connectionString = process.env.DATABASE_URL;
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+import { Response, Request, NextFunction } from "express";
+import { prisma } from "../../lib/prisma";
+import { Category } from "../../../prisma/generated/client";
 
 export const getAllCategories = async (
   req: Request,
@@ -47,7 +43,7 @@ export const getCategory = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
   try {
     const category = await prisma.category.findUnique({
@@ -68,7 +64,7 @@ export const deleteCategory = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   console.log(id);
 
   try {
@@ -85,7 +81,7 @@ export const deleteCategory = async (
 };
 
 export const editCategory = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
   const { name, shortcut } = req.body;
   const category: Omit<Category, "id" | "createdAt" | "updatedAt"> = {

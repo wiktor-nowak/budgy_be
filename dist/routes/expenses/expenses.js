@@ -1,13 +1,10 @@
-import express from "express";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-const connectionString = process.env.DATABASE_URL;
-const router = express.Router();
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
-export const getAllExpenses = async (_req, res) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.deleteExpense = exports.changeExpense = exports.createExpense = exports.getMonthlySummary = exports.getMonthExpenses = exports.getAllExpenses = void 0;
+const prisma_1 = require("../../lib/prisma");
+const getAllExpenses = async (_req, res) => {
     try {
-        const expenses = await await prisma.expense.findMany({
+        const expenses = await await prisma_1.prisma.expense.findMany({
             include: {
                 account: {
                     select: { type: true },
@@ -26,11 +23,12 @@ export const getAllExpenses = async (_req, res) => {
         res.status(500).json({ error: error });
     }
 };
-export const getMonthExpenses = async (req, res) => {
+exports.getAllExpenses = getAllExpenses;
+const getMonthExpenses = async (req, res) => {
     const userId = "";
     // const userId = req.user?.id;
     try {
-        const result = await prisma.$queryRaw `
+        const result = await prisma_1.prisma.$queryRaw `
       SELECT DISTINCT EXTRACT(YEAR FROM "createdAt") AS year, EXTRACT(MONTH FROM "createdAt") AS month
       FROM "Expense"
       WHERE "accountId" IN (
@@ -47,14 +45,15 @@ export const getMonthExpenses = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch expense months" });
     }
 };
-export const getMonthlySummary = async (req, res) => {
+exports.getMonthExpenses = getMonthExpenses;
+const getMonthlySummary = async (req, res) => {
     const userId = "";
     const { year, month } = req.query;
     if (!year || !month) {
         res.status(400).json({ error: "Year and month are required" });
     }
     try {
-        const result = await prisma.$queryRaw `
+        const result = await prisma_1.prisma.$queryRaw `
       SELECT
         c.id AS "categoryId",
         c.name AS "categoryName",
@@ -78,13 +77,14 @@ export const getMonthlySummary = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch monthly summary" });
     }
 };
-export const createExpense = async (req, res) => {
+exports.getMonthlySummary = getMonthlySummary;
+const createExpense = async (req, res) => {
     const { amount, accountId, categoryId, description } = req.body;
     if (!amount || !accountId || !categoryId) {
         res.status(400).json({ error: "Missing required fields" });
     }
     try {
-        const newExpense = await prisma.expense.create({
+        const newExpense = await prisma_1.prisma.expense.create({
             data: {
                 amount,
                 accountId,
@@ -99,11 +99,12 @@ export const createExpense = async (req, res) => {
         res.status(500).json({ error: "Failed to create expense" });
     }
 };
-export const changeExpense = async (req, res) => {
-    const { id } = req.params;
+exports.createExpense = createExpense;
+const changeExpense = async (req, res) => {
     const { amount, accountId, categoryId, description } = req.body;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     try {
-        const updatedExpense = await prisma.expense.update({
+        const updatedExpense = await prisma_1.prisma.expense.update({
             where: { id },
             data: {
                 amount,
@@ -118,13 +119,14 @@ export const changeExpense = async (req, res) => {
         res.status(500).json({ error: "Failed to update expense" });
     }
 };
-export const deleteExpense = async (req, res) => {
-    const id = req.params.id;
+exports.changeExpense = changeExpense;
+const deleteExpense = async (req, res) => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     if (!id) {
         res.status(400).send({ error: "Invalid expense ID" });
     }
     try {
-        await prisma.expense.delete({
+        await prisma_1.prisma.expense.delete({
             where: { id },
         });
         res
@@ -135,3 +137,4 @@ export const deleteExpense = async (req, res) => {
         res.status(404).json({ error: "Expense not found or already deleted." });
     }
 };
+exports.deleteExpense = deleteExpense;

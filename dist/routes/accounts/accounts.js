@@ -1,9 +1,12 @@
-import { PrismaClient, Prisma, AccountType } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.editAccount = exports.getAccount = exports.getMyAccounts = exports.deleteAccount = exports.createAccount = exports.getMainAccount = exports.getAllAccounts = void 0;
+const client_1 = require("../../prisma/generated/client");
+const adapter_pg_1 = require("@prisma/adapter-pg");
 const connectionString = process.env.DATABASE_URL;
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
-export const getAllAccounts = async (_req, res, next) => {
+const adapter = new adapter_pg_1.PrismaPg({ connectionString });
+const prisma = new client_1.PrismaClient({ adapter });
+const getAllAccounts = async (_req, res, next) => {
     try {
         const accounts = await prisma.account.findMany();
         res.status(200).send({ response: accounts });
@@ -12,7 +15,8 @@ export const getAllAccounts = async (_req, res, next) => {
         res.status(500).json({ error: error });
     }
 };
-export const getMainAccount = async (req, res, next) => {
+exports.getAllAccounts = getAllAccounts;
+const getMainAccount = async (req, res, next) => {
     const userId = "";
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
@@ -42,7 +46,8 @@ export const getMainAccount = async (req, res, next) => {
         res.status(500).json({ error: "Failed to fetch user profile" });
     }
 };
-export const createAccount = async (req, res, next) => {
+exports.getMainAccount = getMainAccount;
+const createAccount = async (req, res, next) => {
     const { name, type, balance, description, isFirstAccount } = req.body;
     const userId = "";
     if (!userId) {
@@ -50,18 +55,18 @@ export const createAccount = async (req, res, next) => {
     }
     else {
         try {
-            if (!Object.values(AccountType).includes(type)) {
+            if (!Object.values(client_1.AccountType).includes(type)) {
                 res.status(400).json({ error: "Invalid account type" });
             }
-            if (type === AccountType.SHARED) {
+            if (type === client_1.AccountType.SHARED) {
                 const newAccount = await prisma.account.create({
                     data: {
                         name,
                         type,
-                        balance: Prisma.Decimal(balance),
+                        balance: client_1.Prisma.Decimal(balance),
                         description,
                         ownerId: null,
-                        lastMonthlyBalance: Prisma.Decimal(0.0),
+                        lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
                     },
                 });
                 await prisma.userToAccount.create({
@@ -75,15 +80,15 @@ export const createAccount = async (req, res, next) => {
                     .json({ response: `Account ${newAccount.name} created!` });
             }
             else {
-                if (type === AccountType.BANK) {
+                if (type === client_1.AccountType.BANK) {
                     const newlyCreatedAccount = await prisma.account.create({
                         data: {
                             name,
                             type,
-                            balance: Prisma.Decimal(balance),
+                            balance: client_1.Prisma.Decimal(balance),
                             description,
                             ownerId: userId,
-                            lastMonthlyBalance: Prisma.Decimal(0.0),
+                            lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
                         },
                     });
                     await prisma.user.update({
@@ -96,10 +101,10 @@ export const createAccount = async (req, res, next) => {
                         data: {
                             name,
                             type,
-                            balance: Prisma.Decimal(balance),
+                            balance: client_1.Prisma.Decimal(balance),
                             description,
                             ownerId: userId,
-                            lastMonthlyBalance: Prisma.Decimal(0.0),
+                            lastMonthlyBalance: client_1.Prisma.Decimal(0.0),
                         },
                     });
                 }
@@ -111,8 +116,9 @@ export const createAccount = async (req, res, next) => {
         }
     }
 };
-export const deleteAccount = async (req, res, next) => {
-    const id = req.params.id;
+exports.createAccount = createAccount;
+const deleteAccount = async (req, res, next) => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     try {
         await prisma.account.delete({
             where: { id },
@@ -125,7 +131,8 @@ export const deleteAccount = async (req, res, next) => {
         res.status(404).json({ error: "Account not found or already deleted." });
     }
 };
-export const getMyAccounts = async (req, res, next) => {
+exports.deleteAccount = deleteAccount;
+const getMyAccounts = async (req, res, next) => {
     const userId = "";
     if (!userId) {
         res.status(401).json({ error: "User not authenticated" });
@@ -147,8 +154,9 @@ export const getMyAccounts = async (req, res, next) => {
         res.status(500).json({ error: "Failed to fetch user accounts" });
     }
 };
-export const getAccount = async (req, res, next) => {
-    const id = req.params.id;
+exports.getMyAccounts = getMyAccounts;
+const getAccount = async (req, res, next) => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     try {
         const account = await prisma.account.findUnique({
             where: { id },
@@ -180,8 +188,9 @@ export const getAccount = async (req, res, next) => {
         res.status(500).json({ error: error });
     }
 };
-export const editAccount = async (req, res, next) => {
-    const id = req.params.id;
+exports.getAccount = getAccount;
+const editAccount = async (req, res, next) => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const { name, balance, description } = req.body;
     // const userId = req.user?.id;
     const userId = "";
@@ -193,7 +202,7 @@ export const editAccount = async (req, res, next) => {
             where: { id },
             data: {
                 name,
-                balance: Prisma.Decimal(balance),
+                balance: client_1.Prisma.Decimal(balance),
                 description,
             },
         });
@@ -205,3 +214,4 @@ export const editAccount = async (req, res, next) => {
         res.status(500).send({ error: "Failed to update account" });
     }
 };
+exports.editAccount = editAccount;

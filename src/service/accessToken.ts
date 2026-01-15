@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { ROLES } from "../constants";
 import { AccessTokenPayload } from "../types/tokens";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;

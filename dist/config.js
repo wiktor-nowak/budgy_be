@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const config = {
     env: process.env.NODE_ENV || "development",
     port: parseInt(process.env.PORT || "3003"),
@@ -8,4 +10,4 @@ const config = {
     clientId: process.env.AUTH0_CLIENT_ID || "",
     clientSecret: process.env.AUTH0_CLIENT_SECRET || "",
 };
-export default config;
+exports.default = config;

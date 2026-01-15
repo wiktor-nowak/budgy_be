@@ -1,4 +1,7 @@
-export function authorize(allowedRoles) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.authorize = authorize;
+function authorize(allowedRoles) {
     // return (req: Request, res: Response, next: NextFunction): void => {
     //   if (!req.auth?.payload.sub || !req.auth?.payload.sub) {
     //     res

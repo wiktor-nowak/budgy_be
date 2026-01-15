@@ -2,7 +2,7 @@ import { Response, Request, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import EntityNotFoundError from "../../errors/EntityNotFoundError";
 import { prisma } from "../../lib/prisma";
-import { User } from "../../../prisma/generated/client";
+import { User } from "../../prisma/generated/client";
 import { LoginCredentials, RegisterCredentials } from "../../types/credentials";
 import { parseRegisterRequest } from "../../service/credentials";
 import { ROLES } from "../../constants";

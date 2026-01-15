@@ -1,52 +1,86 @@
-import express from "express";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import bcrypt from "bcrypt";
-import { z } from "zod";
-// import { createToken } from "../middleware/authentication";
-const createToken = (dbUser) => {
-    console.log(dbUser);
-};
-const connectionString = process.env.DATABASE_URL;
-const router = express.Router();
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
-const passwordRegex = /^(?=.*[0-9])(?=.*[@!#$%^&*])/;
-// TODO Password check is done twice, on frontend and on backend!
-const passwordCheck = z.string().min(6).max(20).regex(passwordRegex, {
-    message: "Password must contain at least one digit and one special character",
-});
-const loginSchema = z.object({
-    email: z.string().email(),
-    password: passwordCheck,
-});
-export const check = async (req, res) => {
-    const requestParsed = loginSchema.safeParse(req.body);
-    if (!requestParsed.success) {
-        res.status(400).json(requestParsed.error);
-        return;
-    }
-    const { email, password } = requestParsed.data;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.loginHandler = loginHandler;
+exports.logoutHandler = logoutHandler;
+exports.refreshHandler = refreshHandler;
+const refreshToken_1 = require("../../service/refreshToken");
+const accessToken_1 = require("../../service/accessToken");
+const credentials_1 = require("../../service/credentials");
+const users_1 = require("../users/users");
+async function loginHandler(req, res) {
     try {
-        const dbUser = await prisma.user.findUnique({
-            where: { email },
+        const credentials = (0, credentials_1.parseLoginRequest)(req.body);
+        const validatedUserId = await (0, users_1.validateUserCredentials)(credentials);
+        // issue new access token
+        const accessToken = (0, accessToken_1.signAccessToken)({
+            sub: validatedUserId,
         });
-        if (!dbUser) {
-            res.status(400).json({ error: "Invalid credentials" });
-            return;
-        }
-        const match = await bcrypt.compare(password, dbUser.password);
-        if (!match) {
-            res.status(400).json({ error: "Invalid credentials" });
-            return;
-        }
-        const token = createToken(dbUser);
+        //generate new refresh token
+        const newRefreshToken = (0, refreshToken_1.generateRefreshToken)();
+        const newHashedRefreshToken = (0, refreshToken_1.hashRefreshToken)(newRefreshToken);
+        await (0, refreshToken_1.createRefreshTokenRecord)(newHashedRefreshToken, validatedUserId, (0, refreshToken_1.setExpiresInDays)(30));
+        res.cookie("refresh_token", newRefreshToken, {
+            httpOnly: true,
+            // secure: true // set while on server
+            sameSite: "lax",
+            path: "/auth/refresh",
+        });
         res.status(200).send({
-            message: `User ${dbUser.name} successfully authenticated!`,
-            token: token,
+            message: `User ${validatedUserId} successfully logged in!`,
+            token: accessToken,
         });
     }
     catch (error) {
         res.status(500).send({ error: error });
     }
-};
+}
+async function logoutHandler(req, res) {
+    const rawToken = req.cookies?.refresh_token;
+    if (!rawToken) {
+        return res.sendStatus(401); // add sending message!
+    }
+    const tokenHash = (0, refreshToken_1.hashRefreshToken)(rawToken);
+    (0, refreshToken_1.revokeRefreshToken)(tokenHash);
+    res.clearCookie("refresh_token", {
+        httpOnly: true,
+        // secure: true // set while on server
+        sameSite: "lax",
+        path: "/auth/refresh",
+    });
+}
+async function refreshHandler(req, res) {
+    const rawToken = req.cookies?.refresh_token;
+    if (!rawToken) {
+        return res.sendStatus(401); // add sending message!
+    }
+    const tokenHash = (0, refreshToken_1.hashRefreshToken)(rawToken);
+    const existing = await (0, refreshToken_1.validateRefreshToken)(tokenHash);
+    if (!existing) {
+        return res.sendStatus(401);
+    }
+    //generate new refresh token
+    const newRefreshToken = (0, refreshToken_1.generateRefreshToken)();
+    const newHashedRefreshToken = (0, refreshToken_1.hashRefreshToken)(newRefreshToken);
+    try {
+        await (0, refreshToken_1.rotateRefreshToken)(tokenHash, newHashedRefreshToken, existing.userId, (0, refreshToken_1.setExpiresInDays)(30));
+    }
+    catch (error) {
+        await (0, refreshToken_1.revokeAllUserRefreshTokens)(existing.userId);
+        return res.sendStatus(401);
+    }
+    // issue new access token
+    const accessToken = (0, accessToken_1.signAccessToken)({
+        sub: existing.userId,
+    });
+    // set new refresh cookie
+    res.cookie("refresh_token", newRefreshToken, {
+        httpOnly: true,
+        // secure: true // set while on server
+        sameSite: "lax",
+        path: "/auth/refresh",
+    });
+    return res.status(200).send({
+        message: `User ${existing.userId} successfully authenticated!`,
+        token: accessToken,
+    });
+}

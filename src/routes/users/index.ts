@@ -1,6 +1,5 @@
 import express, { Router } from "express";
 import { authMiddleware } from "../../middleware/authentication";
-import { ROLES } from "../../constants";
 import {
   changePassword,
   changeUser,

@@ -1,5 +1,9 @@
 import { Response, Request, NextFunction } from "express";
-import { PrismaClient, Prisma, AccountType } from "@prisma/client";
+import {
+  PrismaClient,
+  Prisma,
+  AccountType,
+} from "../../prisma/generated/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const connectionString = process.env.DATABASE_URL;
@@ -134,7 +138,7 @@ export const deleteAccount = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
   try {
     await prisma.account.delete({
@@ -182,7 +186,7 @@ export const getAccount = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
   try {
     const account = await prisma.account.findUnique({
@@ -219,7 +223,7 @@ export const editAccount = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const id = req.params.id;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const { name, balance, description } = req.body;
   // const userId = req.user?.id;
   const userId = "";

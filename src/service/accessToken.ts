@@ -4,7 +4,6 @@ import { AccessTokenPayload } from "../types/tokens";
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const SIGNING_OPTIONS = {
-  algorithm: "RS256" as const,
   expiresIn: 10 * 60, // 10 minutes
 };
 

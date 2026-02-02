@@ -28,11 +28,13 @@ export async function loginHandler(req: Request, res: Response) {
     //generate new refresh token
     const newRefreshToken = generateRefreshToken();
     const newHashedRefreshToken = hashRefreshToken(newRefreshToken);
-    await createRefreshTokenRecord(
+    const x = await createRefreshTokenRecord(
       newHashedRefreshToken,
       validatedUserId,
       setExpiresInDays(30),
     );
+
+    console.log(x);
 
     res.cookie("refresh_token", newRefreshToken, {
       httpOnly: true,
@@ -46,7 +48,7 @@ export async function loginHandler(req: Request, res: Response) {
       token: accessToken,
     });
   } catch (error) {
-    res.status(500).send({ error: error });
+    res.status(500).send({ error: error, info: "WTF" });
   }
 }
 
@@ -66,7 +68,9 @@ export async function logoutHandler(req: Request, res: Response) {
 }
 
 export async function refreshHandler(req: Request, res: Response) {
+  console.log(req.cookies);
   const rawToken = req.cookies?.refresh_token;
+  console.log(rawToken);
   if (!rawToken) {
     return res.sendStatus(401); // add sending message!
   }

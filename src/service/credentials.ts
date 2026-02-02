@@ -14,7 +14,7 @@ const registerSchema = z.object({
   username: z.string().min(3),
   email: z.string().email(),
   password: passwordCheck,
-  role: z.nativeEnum(ROLES),
+  role: z.nativeEnum(ROLES).optional(),
   name: z.string().min(2).optional(),
   surname: z.string().min(2).optional(),
 });

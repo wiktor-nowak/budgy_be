@@ -15,15 +15,14 @@ import errorHandler from "./middleware/error-handler";
 const app = express();
 const PORT = process.env.PORT ?? 3003;
 const corsOptions = {
-  origin: "*",
-  // origin: "http://localhost:5173",
-  methods: "GET,PUT,PATCH,POST,DELETE",
+  origin: "http://localhost:5173",
+  methods: ["GET", "PUT", "PATCH", "POST", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
+app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
 

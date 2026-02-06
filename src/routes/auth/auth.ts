@@ -22,30 +22,29 @@ export async function loginHandler(req: Request, res: Response) {
 
     // issue new access token
     const accessToken = signAccessToken({
-      sub: validatedUserId,
+      id: validatedUserId,
     });
 
     //generate new refresh token
     const newRefreshToken = generateRefreshToken();
     const newHashedRefreshToken = hashRefreshToken(newRefreshToken);
-    const x = await createRefreshTokenRecord(
+    await createRefreshTokenRecord(
       newHashedRefreshToken,
       validatedUserId,
       setExpiresInDays(30),
     );
 
-    console.log(x);
-
     res.cookie("refresh_token", newRefreshToken, {
       httpOnly: true,
       // secure: true // set while on server
+      secure: false,
       sameSite: "lax",
-      path: "/auth/refresh",
+      path: "/",
     });
 
     res.status(200).send({
-      message: `User ${validatedUserId} successfully logged in!`,
-      token: accessToken,
+      message: `User successfully logged in!`,
+      accessToken: accessToken,
     });
   } catch (error) {
     res.status(500).send({ error: error, info: "WTF" });
@@ -63,14 +62,12 @@ export async function logoutHandler(req: Request, res: Response) {
     httpOnly: true,
     // secure: true // set while on server
     sameSite: "lax",
-    path: "/auth/refresh",
+    path: "/",
   });
 }
 
 export async function refreshHandler(req: Request, res: Response) {
-  console.log(req.cookies);
-  const rawToken = req.cookies?.refresh_token;
-  console.log(rawToken);
+  const rawToken = req.cookies.refresh_token;
   if (!rawToken) {
     return res.sendStatus(401); // add sending message!
   }
@@ -98,19 +95,20 @@ export async function refreshHandler(req: Request, res: Response) {
 
   // issue new access token
   const accessToken = signAccessToken({
-    sub: existing.userId,
+    id: existing.userId,
   });
 
   // set new refresh cookie
   res.cookie("refresh_token", newRefreshToken, {
     httpOnly: true,
     // secure: true // set while on server
+    secure: false,
     sameSite: "lax",
-    path: "/auth/refresh",
+    path: "/",
   });
 
   return res.status(200).send({
-    message: `User ${existing.userId} successfully authenticated!`,
-    token: accessToken,
+    message: `User successfully authenticated!`,
+    accessToken: accessToken,
   });
 }

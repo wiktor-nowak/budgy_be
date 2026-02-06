@@ -104,7 +104,10 @@ export const createUser = async (req: Request, res: Response) => {
     });
     res
       .status(201)
-      .send({ response: `User ${createdUser.username} successfully created.` });
+      .send({
+        message: `User ${createdUser.username} successfully created.`,
+        userName: createdUser.username,
+      });
 
     // add sending e-mail with registration link
   } catch (error) {

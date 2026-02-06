@@ -158,7 +158,7 @@ export const getMyAccounts = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const userId = "";
+  const userId = req.auth.userId;
   if (!userId) {
     res.status(401).json({ error: "User not authenticated" });
   }
@@ -178,6 +178,30 @@ export const getMyAccounts = async (
     res.status(200).send({ response: accounts });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user accounts" });
+  }
+};
+
+// OK
+export const getAccountsCount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.auth.id;
+  console.log(userId);
+  try {
+    const XXX = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    const accounts = await prisma.account.findMany({
+      where: {
+        ownerId: userId,
+      },
+    });
+    res.status(200).send({ response: XXX });
+  } catch (error) {
+    res.status(500).json({ error: "XD" });
   }
 };
 

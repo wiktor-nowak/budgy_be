@@ -1,6 +1,6 @@
 import { ROLES } from "../constants";
 
 export interface AccessTokenPayload {
-  sub: string;
+  id: string;
   roles?: ROLES[];
 }

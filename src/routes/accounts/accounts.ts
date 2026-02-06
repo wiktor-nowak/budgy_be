@@ -10,17 +10,9 @@ const connectionString = process.env.DATABASE_URL;
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-export const getAllAccounts = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const accounts = await prisma.account.findMany();
-    res.status(200).send({ response: accounts });
-  } catch (error) {
-    res.status(500).json({ error: error });
-  }
+export const getAllAccounts = async (_req: Request, res: Response) => {
+  const accounts = await prisma.account.findMany();
+  res.status(200).json({ response: accounts });
 };
 
 export const getMainAccount = async (
@@ -190,16 +182,13 @@ export const getAccountsCount = async (
   const userId = req.auth.id;
   console.log(userId);
   try {
-    const XXX = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
     const accounts = await prisma.account.findMany({
       where: {
         ownerId: userId,
       },
     });
-    res.status(200).send({ response: XXX });
+
+    res.status(200).send({ response: accounts.length });
   } catch (error) {
     res.status(500).json({ error: "XD" });
   }

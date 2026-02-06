@@ -1,10 +1,10 @@
 import { Response, Request, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import EntityNotFoundError from "../../errors/EntityNotFoundError";
-import { prisma } from "../../lib/prisma";
+import { prisma } from "../../lib/db/prisma";
 import { User } from "../../prisma/generated/client";
 import { LoginCredentials, RegisterCredentials } from "../../types/credentials";
-import { parseRegisterRequest } from "../../service/credentials";
+import { parseRegisterRequest } from "../../service/credentialsService";
 import { ROLES } from "../../constants";
 
 const SALT = 10;
@@ -102,12 +102,10 @@ export const createUser = async (req: Request, res: Response) => {
     const createdUser = await prisma.user.create({
       data: user,
     });
-    res
-      .status(201)
-      .send({
-        message: `User ${createdUser.username} successfully created.`,
-        userName: createdUser.username,
-      });
+    res.status(201).send({
+      message: `User ${createdUser.username} successfully created.`,
+      userName: createdUser.username,
+    });
 
     // add sending e-mail with registration link
   } catch (error) {

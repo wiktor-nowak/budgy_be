@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from "express";
-import { prisma } from "../../lib/prisma";
+import { prisma } from "../../lib/db/prisma";
 import { Category } from "../../prisma/generated/client";
 
 export const getAllCategories = async (

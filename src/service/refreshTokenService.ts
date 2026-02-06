@@ -1,5 +1,13 @@
 import crypto from "crypto";
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/db/prisma";
+import { CookieOptions } from "express";
+
+export const REFRESH_TOKEN_OPTIONS: CookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  path: "/",
+};
 
 // used in cookie
 export function generateRefreshToken(bytes: number = 64) {

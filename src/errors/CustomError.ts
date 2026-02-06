@@ -1,7 +1,9 @@
-class CustomError<C extends string> extends Error {
-  message: string;
-  statusCode: number;
-  code?: C;
+import { ERROR_CODES } from "../constants";
+
+abstract class CustomError<C extends string = ERROR_CODES> extends Error {
+  public readonly statusCode: number;
+  public readonly code?: C;
+  public readonly isOperational = true;
 
   constructor({
     message,
@@ -12,10 +14,11 @@ class CustomError<C extends string> extends Error {
     statusCode: number;
     code?: C;
   }) {
-    super();
-    this.message = message;
+    super(message);
     this.statusCode = statusCode;
     this.code = code;
+
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 

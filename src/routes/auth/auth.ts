@@ -4,108 +4,74 @@ import {
   createRefreshTokenRecord,
   generateRefreshToken,
   hashRefreshToken,
+  REFRESH_TOKEN_OPTIONS,
   revokeAllUserRefreshTokens,
   revokeRefreshToken,
   rotateRefreshToken,
   setExpiresInDays,
   validateRefreshToken,
-} from "../../service/refreshToken";
-import { signAccessToken } from "../../service/accessToken";
-import { parseLoginRequest } from "../../service/credentials";
-import { LoginCredentials } from "../../types/credentials";
-import { validateUserCredentials } from "../users/users";
+} from "../../service/refreshTokenService";
+import { signAccessToken } from "../../service/accessTokenService";
+import { parseLoginRequest } from "../../service/credentialsService";
+import { validateUserCredentials } from "../../service/usersService";
+import AuthenticationError from "../../errors/AuthenticationError";
 
 export async function loginHandler(req: Request, res: Response) {
-  try {
-    const credentials: LoginCredentials = parseLoginRequest(req.body);
-    const validatedUserId = await validateUserCredentials(credentials);
+  const credentials = parseLoginRequest(req.body);
+  const userId = await validateUserCredentials(credentials);
+  const accessToken = signAccessToken({
+    id: userId,
+  });
+  const refreshToken = generateRefreshToken();
+  await createRefreshTokenRecord(
+    hashRefreshToken(refreshToken),
+    userId,
+    setExpiresInDays(30),
+  );
 
-    // issue new access token
-    const accessToken = signAccessToken({
-      id: validatedUserId,
-    });
-
-    //generate new refresh token
-    const newRefreshToken = generateRefreshToken();
-    const newHashedRefreshToken = hashRefreshToken(newRefreshToken);
-    await createRefreshTokenRecord(
-      newHashedRefreshToken,
-      validatedUserId,
-      setExpiresInDays(30),
-    );
-
-    res.cookie("refresh_token", newRefreshToken, {
-      httpOnly: true,
-      // secure: true // set while on server
-      secure: false,
-      sameSite: "lax",
-      path: "/",
-    });
-
-    res.status(200).send({
-      message: `User successfully logged in!`,
-      accessToken: accessToken,
-    });
-  } catch (error) {
-    res.status(500).send({ error: error, info: "WTF" });
-  }
+  res.cookie("refresh_token", refreshToken, REFRESH_TOKEN_OPTIONS);
+  res.status(200).send({
+    message: `User successfully logged in!`,
+    accessToken: accessToken,
+  });
 }
 
 export async function logoutHandler(req: Request, res: Response) {
   const rawToken = req.cookies?.refresh_token;
-  if (!rawToken) {
-    return res.sendStatus(401); // add sending message!
+  if (rawToken) {
+    await revokeRefreshToken(hashRefreshToken(rawToken));
   }
-  const tokenHash = hashRefreshToken(rawToken);
-  revokeRefreshToken(tokenHash);
-  res.clearCookie("refresh_token", {
-    httpOnly: true,
-    // secure: true // set while on server
-    sameSite: "lax",
-    path: "/",
-  });
+  res.clearCookie("refresh_token", REFRESH_TOKEN_OPTIONS);
+  res.sendStatus(204);
 }
 
 export async function refreshHandler(req: Request, res: Response) {
   const rawToken = req.cookies.refresh_token;
-  if (!rawToken) {
-    return res.sendStatus(401); // add sending message!
-  }
-  const tokenHash = hashRefreshToken(rawToken);
-  const existing = await validateRefreshToken(tokenHash);
-  if (!existing) {
-    return res.sendStatus(401);
-  }
+  if (!rawToken) throw new AuthenticationError();
+  const hashedToken = hashRefreshToken(rawToken);
+  const existingRefreshToken = await validateRefreshToken(hashedToken);
+  if (!existingRefreshToken) throw new AuthenticationError();
 
-  //generate new refresh token
   const newRefreshToken = generateRefreshToken();
   const newHashedRefreshToken = hashRefreshToken(newRefreshToken);
 
   try {
     await rotateRefreshToken(
-      tokenHash,
+      hashedToken,
       newHashedRefreshToken,
-      existing.userId,
+      existingRefreshToken.userId,
       setExpiresInDays(30),
     );
   } catch (error) {
-    await revokeAllUserRefreshTokens(existing.userId);
-    return res.sendStatus(401);
+    await revokeAllUserRefreshTokens(existingRefreshToken.userId);
+    throw new AuthenticationError("Session invalidated");
   }
 
-  // issue new access token
   const accessToken = signAccessToken({
-    id: existing.userId,
+    id: existingRefreshToken.userId,
   });
 
-  // set new refresh cookie
-  res.cookie("refresh_token", newRefreshToken, {
-    httpOnly: true,
-    // secure: true // set while on server
-    secure: false,
-    sameSite: "lax",
-    path: "/",
-  });
+  res.cookie("refresh_token", newRefreshToken, REFRESH_TOKEN_OPTIONS);
 
   return res.status(200).send({
     message: `User successfully authenticated!`,

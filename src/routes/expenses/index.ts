@@ -1,5 +1,4 @@
 import express, { Router } from "express";
-import { authMiddleware } from "../../middleware/authentication";
 import {
   changeExpense,
   createExpense,
@@ -11,12 +10,12 @@ import {
 
 const expenses: Router = express.Router();
 
-expenses.get("/", authMiddleware, getAllExpenses);
-// expenses.get("/:id", authMiddleware, getExpense);
-expenses.get("/months", authMiddleware, getMonthExpenses);
-expenses.get("/monthly-summary", authMiddleware, getMonthlySummary);
+expenses.get("/", getAllExpenses);
+// expenses.get("/:id", getExpense);
+expenses.get("/months", getMonthExpenses);
+expenses.get("/monthly-summary", getMonthlySummary);
 expenses.post("/", createExpense);
-expenses.patch("/:id", authMiddleware, changeExpense);
-expenses.delete("/:id", authMiddleware, deleteExpense);
+expenses.patch("/:id", changeExpense);
+expenses.delete("/:id", deleteExpense);
 
 export default expenses;

@@ -1,5 +1,5 @@
 import { prisma } from "../lib/db/prisma";
-import { LoginCredentials } from "../types/credentials";
+import { LoginCredentials } from "../types/auth";
 import bcrypt from "bcrypt";
 
 export const validateUserCredentials = async ({
@@ -17,4 +17,14 @@ export const validateUserCredentials = async ({
     throw new Error("Invalid credentials"); // actual mismatching credentials
   }
   return user.id;
+};
+
+export const prepareSelectedColumns = (columns: string[]) => {
+  return columns.reduce(
+    (selection, column) => ({
+      ...selection,
+      [column]: true,
+    }),
+    {},
+  );
 };

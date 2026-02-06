@@ -11,6 +11,7 @@ import balance from "./routes/balance";
 import users from "./routes/users";
 
 import errorHandler from "./middleware/error-handler";
+import { authMiddleware } from "./middleware/authentication";
 
 const app = express();
 const PORT = process.env.PORT ?? 3003;
@@ -26,12 +27,14 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use("/accounts", accountsRoutes);
-app.use("/auth", authRoutes);
 app.use("/balance", balance);
 app.use("/categories", categoryRoutes);
 app.use("/expenses", expensesRoutes);
-app.use("/users", users);
+app.use(authMiddleware);
+// authMiddleware works only for those above
 
+app.use("/auth", authRoutes);
+app.use("/users", users);
 app.use(errorHandler);
 
 app.listen(PORT, () => {

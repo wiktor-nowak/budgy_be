@@ -1,5 +1,4 @@
 import express, { Router } from "express";
-import { authMiddleware } from "../../middleware/authentication";
 import {
   createAccount,
   deleteAccount,
@@ -13,13 +12,13 @@ import {
 
 const accounts: Router = express.Router();
 
-// accounts.get("/", authMiddleware, getAllAccounts);
-// accounts.get("/:id", authMiddleware, getAccount);
-// accounts.get("/main-account", authMiddleware, getMainAccount);
-// accounts.get("/my-accounts", authMiddleware, getMyAccounts);
-accounts.get("/count", authMiddleware, getAccountsCount);
-// accounts.post("/", authMiddleware, createAccount);
-// accounts.delete("/:id", authMiddleware, deleteAccount);
-// accounts.patch("/:id", authMiddleware, editAccount);
+// accounts.get("/", getAllAccounts);
+// accounts.get("/:id", getAccount);
+// accounts.get("/main-account", getMainAccount);
+// accounts.get("/my-accounts", getMyAccounts);
+accounts.get("/count", getAccountsCount);
+// accounts.post("/", createAccount);
+// accounts.delete("/:id", deleteAccount);
+// accounts.patch("/:id", editAccount);
 
 export default accounts;

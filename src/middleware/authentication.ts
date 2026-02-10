@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from "express";
 import AuthenticationError from "../errors/AuthenticationError";
-import { verifyAccessToken } from "../service/accessTokenService";
+import accessTokenService from "../services/accessToken";
 
 export const authMiddleware = (
   req: Request,
@@ -15,7 +15,7 @@ export const authMiddleware = (
 
   const token = authHeader.split(" ")[1];
   try {
-    req.auth = verifyAccessToken(token);
+    req.auth = accessTokenService.verifyAccessToken(token);
     next();
   } catch (error) {
     throw new AuthenticationError(

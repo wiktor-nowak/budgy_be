@@ -256,6 +256,7 @@ export type AccountWhereInput = {
   coOwners?: Prisma.UserToAccountListRelationFilter
   expenses?: Prisma.ExpenseListRelationFilter
   monthlyBalances?: Prisma.MonthlyBalanceListRelationFilter
+  categories?: Prisma.CategoryListRelationFilter
 }
 
 export type AccountOrderByWithRelationInput = {
@@ -272,6 +273,7 @@ export type AccountOrderByWithRelationInput = {
   coOwners?: Prisma.UserToAccountOrderByRelationAggregateInput
   expenses?: Prisma.ExpenseOrderByRelationAggregateInput
   monthlyBalances?: Prisma.MonthlyBalanceOrderByRelationAggregateInput
+  categories?: Prisma.CategoryOrderByRelationAggregateInput
 }
 
 export type AccountWhereUniqueInput = Prisma.AtLeast<{
@@ -291,6 +293,7 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   coOwners?: Prisma.UserToAccountListRelationFilter
   expenses?: Prisma.ExpenseListRelationFilter
   monthlyBalances?: Prisma.MonthlyBalanceListRelationFilter
+  categories?: Prisma.CategoryListRelationFilter
 }, "id" | "id">
 
 export type AccountOrderByWithAggregationInput = {
@@ -338,6 +341,7 @@ export type AccountCreateInput = {
   coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
   monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUncheckedCreateInput = {
@@ -353,6 +357,7 @@ export type AccountUncheckedCreateInput = {
   coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
   monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUpdateInput = {
@@ -368,6 +373,7 @@ export type AccountUpdateInput = {
   coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
   monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateInput = {
@@ -383,6 +389,7 @@ export type AccountUncheckedUpdateInput = {
   coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountCreateManyInput = {
@@ -577,6 +584,20 @@ export type AccountUpdateOneRequiredWithoutExpensesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutExpensesInput, Prisma.AccountUpdateWithoutExpensesInput>, Prisma.AccountUncheckedUpdateWithoutExpensesInput>
 }
 
+export type AccountCreateNestedOneWithoutCategoriesInput = {
+  create?: Prisma.XOR<Prisma.AccountCreateWithoutCategoriesInput, Prisma.AccountUncheckedCreateWithoutCategoriesInput>
+  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutCategoriesInput
+  connect?: Prisma.AccountWhereUniqueInput
+}
+
+export type AccountUpdateOneRequiredWithoutCategoriesNestedInput = {
+  create?: Prisma.XOR<Prisma.AccountCreateWithoutCategoriesInput, Prisma.AccountUncheckedCreateWithoutCategoriesInput>
+  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutCategoriesInput
+  upsert?: Prisma.AccountUpsertWithoutCategoriesInput
+  connect?: Prisma.AccountWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutCategoriesInput, Prisma.AccountUpdateWithoutCategoriesInput>, Prisma.AccountUncheckedUpdateWithoutCategoriesInput>
+}
+
 export type AccountCreateWithoutOwnerInput = {
   id?: string
   name: string
@@ -589,6 +610,7 @@ export type AccountCreateWithoutOwnerInput = {
   coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
   monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUncheckedCreateWithoutOwnerInput = {
@@ -603,6 +625,7 @@ export type AccountUncheckedCreateWithoutOwnerInput = {
   coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
   monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type AccountCreateOrConnectWithoutOwnerInput = {
@@ -658,6 +681,7 @@ export type AccountCreateWithoutCoOwnersInput = {
   owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
   monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUncheckedCreateWithoutCoOwnersInput = {
@@ -672,6 +696,7 @@ export type AccountUncheckedCreateWithoutCoOwnersInput = {
   ownerId?: string | null
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
   monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type AccountCreateOrConnectWithoutCoOwnersInput = {
@@ -702,6 +727,7 @@ export type AccountUpdateWithoutCoOwnersInput = {
   owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
   monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateWithoutCoOwnersInput = {
@@ -716,6 +742,7 @@ export type AccountUncheckedUpdateWithoutCoOwnersInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountCreateWithoutMonthlyBalancesInput = {
@@ -730,6 +757,7 @@ export type AccountCreateWithoutMonthlyBalancesInput = {
   owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
   coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUncheckedCreateWithoutMonthlyBalancesInput = {
@@ -744,6 +772,7 @@ export type AccountUncheckedCreateWithoutMonthlyBalancesInput = {
   ownerId?: string | null
   coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type AccountCreateOrConnectWithoutMonthlyBalancesInput = {
@@ -774,6 +803,7 @@ export type AccountUpdateWithoutMonthlyBalancesInput = {
   owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
   coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateWithoutMonthlyBalancesInput = {
@@ -788,6 +818,7 @@ export type AccountUncheckedUpdateWithoutMonthlyBalancesInput = {
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountCreateWithoutExpensesInput = {
@@ -802,6 +833,7 @@ export type AccountCreateWithoutExpensesInput = {
   owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
   coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
   monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUncheckedCreateWithoutExpensesInput = {
@@ -816,6 +848,7 @@ export type AccountUncheckedCreateWithoutExpensesInput = {
   ownerId?: string | null
   coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
   monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type AccountCreateOrConnectWithoutExpensesInput = {
@@ -846,6 +879,7 @@ export type AccountUpdateWithoutExpensesInput = {
   owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
   coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
   monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateWithoutExpensesInput = {
@@ -859,6 +893,83 @@ export type AccountUncheckedUpdateWithoutExpensesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
+  monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
+}
+
+export type AccountCreateWithoutCategoriesInput = {
+  id?: string
+  name: string
+  type: $Enums.AccountType
+  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
+  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
+  coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
+  monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+}
+
+export type AccountUncheckedCreateWithoutCategoriesInput = {
+  id?: string
+  name: string
+  type: $Enums.AccountType
+  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
+  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ownerId?: string | null
+  coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
+  monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+}
+
+export type AccountCreateOrConnectWithoutCategoriesInput = {
+  where: Prisma.AccountWhereUniqueInput
+  create: Prisma.XOR<Prisma.AccountCreateWithoutCategoriesInput, Prisma.AccountUncheckedCreateWithoutCategoriesInput>
+}
+
+export type AccountUpsertWithoutCategoriesInput = {
+  update: Prisma.XOR<Prisma.AccountUpdateWithoutCategoriesInput, Prisma.AccountUncheckedUpdateWithoutCategoriesInput>
+  create: Prisma.XOR<Prisma.AccountCreateWithoutCategoriesInput, Prisma.AccountUncheckedCreateWithoutCategoriesInput>
+  where?: Prisma.AccountWhereInput
+}
+
+export type AccountUpdateToOneWithWhereWithoutCategoriesInput = {
+  where?: Prisma.AccountWhereInput
+  data: Prisma.XOR<Prisma.AccountUpdateWithoutCategoriesInput, Prisma.AccountUncheckedUpdateWithoutCategoriesInput>
+}
+
+export type AccountUpdateWithoutCategoriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
+  coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
+  monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+}
+
+export type AccountUncheckedUpdateWithoutCategoriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
 }
 
@@ -885,6 +996,7 @@ export type AccountUpdateWithoutOwnerInput = {
   coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
   monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateWithoutOwnerInput = {
@@ -899,6 +1011,7 @@ export type AccountUncheckedUpdateWithoutOwnerInput = {
   coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateManyWithoutOwnerInput = {
@@ -921,12 +1034,14 @@ export type AccountCountOutputType = {
   coOwners: number
   expenses: number
   monthlyBalances: number
+  categories: number
 }
 
 export type AccountCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   coOwners?: boolean | AccountCountOutputTypeCountCoOwnersArgs
   expenses?: boolean | AccountCountOutputTypeCountExpensesArgs
   monthlyBalances?: boolean | AccountCountOutputTypeCountMonthlyBalancesArgs
+  categories?: boolean | AccountCountOutputTypeCountCategoriesArgs
 }
 
 /**
@@ -960,6 +1075,13 @@ export type AccountCountOutputTypeCountMonthlyBalancesArgs<ExtArgs extends runti
   where?: Prisma.MonthlyBalanceWhereInput
 }
 
+/**
+ * AccountCountOutputType without action
+ */
+export type AccountCountOutputTypeCountCategoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CategoryWhereInput
+}
+
 
 export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -975,6 +1097,7 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   coOwners?: boolean | Prisma.Account$coOwnersArgs<ExtArgs>
   expenses?: boolean | Prisma.Account$expensesArgs<ExtArgs>
   monthlyBalances?: boolean | Prisma.Account$monthlyBalancesArgs<ExtArgs>
+  categories?: boolean | Prisma.Account$categoriesArgs<ExtArgs>
   _count?: boolean | Prisma.AccountCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["account"]>
 
@@ -1022,6 +1145,7 @@ export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   coOwners?: boolean | Prisma.Account$coOwnersArgs<ExtArgs>
   expenses?: boolean | Prisma.Account$expensesArgs<ExtArgs>
   monthlyBalances?: boolean | Prisma.Account$monthlyBalancesArgs<ExtArgs>
+  categories?: boolean | Prisma.Account$categoriesArgs<ExtArgs>
   _count?: boolean | Prisma.AccountCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type AccountIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1038,6 +1162,7 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     coOwners: Prisma.$UserToAccountPayload<ExtArgs>[]
     expenses: Prisma.$ExpensePayload<ExtArgs>[]
     monthlyBalances: Prisma.$MonthlyBalancePayload<ExtArgs>[]
+    categories: Prisma.$CategoryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1447,6 +1572,7 @@ export interface Prisma__AccountClient<T, Null = never, ExtArgs extends runtime.
   coOwners<T extends Prisma.Account$coOwnersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$coOwnersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserToAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   expenses<T extends Prisma.Account$expensesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   monthlyBalances<T extends Prisma.Account$monthlyBalancesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$monthlyBalancesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MonthlyBalancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  categories<T extends Prisma.Account$categoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$categoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1969,6 +2095,30 @@ export type Account$monthlyBalancesArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.MonthlyBalanceScalarFieldEnum | Prisma.MonthlyBalanceScalarFieldEnum[]
+}
+
+/**
+ * Account.categories
+ */
+export type Account$categoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Category
+   */
+  select?: Prisma.CategorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Category
+   */
+  omit?: Prisma.CategoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CategoryInclude<ExtArgs> | null
+  where?: Prisma.CategoryWhereInput
+  orderBy?: Prisma.CategoryOrderByWithRelationInput | Prisma.CategoryOrderByWithRelationInput[]
+  cursor?: Prisma.CategoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CategoryScalarFieldEnum | Prisma.CategoryScalarFieldEnum[]
 }
 
 /**

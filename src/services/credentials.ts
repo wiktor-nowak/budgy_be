@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ROLES } from "../constants";
+import { Role } from "../prisma/generated/enums";
 
 const passwordRegex = /^(?=.*[0-9])(?=.*[@!#$%^&*])/;
 const passwordCheck = z.string().min(6).max(20).regex(passwordRegex, {
@@ -14,12 +14,12 @@ const registerSchema = z.object({
   username: z.string().min(3),
   email: z.string().email(),
   password: passwordCheck,
-  role: z.nativeEnum(ROLES).optional(),
+  role: z.nativeEnum(Role).optional(),
   name: z.string().min(2).optional(),
   surname: z.string().min(2).optional(),
 });
 
-export function parseLoginRequest(reqBody: unknown) {
+function parseLoginRequest(reqBody: unknown) {
   const requestParsed = loginSchema.safeParse(reqBody);
   if (!requestParsed.success) {
     throw new Error(JSON.stringify(requestParsed.error));
@@ -27,10 +27,15 @@ export function parseLoginRequest(reqBody: unknown) {
   return requestParsed.data;
 }
 
-export function parseRegisterRequest(reqBody: unknown) {
+function parseRegisterRequest(reqBody: unknown) {
   const requestParsed = registerSchema.safeParse(reqBody);
   if (!requestParsed.success) {
     throw new Error(JSON.stringify(requestParsed.error));
   }
   return requestParsed.data;
 }
+
+export default {
+  parseLoginRequest,
+  parseRegisterRequest,
+};

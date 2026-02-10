@@ -1,144 +1,85 @@
 import { Response, Request } from "express";
 import { prisma } from "../../lib/db/prisma";
+import expensesServices from "../../services/expenses";
 
-export const getAllExpenses = async (_req: Request, res: Response) => {
-  try {
-    const expenses = await await prisma.expense.findMany({
-      include: {
-        account: {
-          select: { type: true },
-        },
-        category: {
-          select: { name: true },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    res.status(200).send({ response: expenses });
-  } catch (error) {
-    res.status(500).json({ error: error });
-  }
-};
+export async function getAllExpenses(req: Request, res: Response) {
+  const expenses = await expensesServices.getAllExpenses(req.body.accountId);
+  res.status(200).send({ response: expenses });
+}
 
-export const getMonthExpenses = async (req: Request, res: Response) => {
-  const userId = "";
-  // const userId = req.user?.id;
+// async function getMonthExpenses(req: Request, res: Response) {
+//   const userId = "";
+//   // const userId = req.user?.id;
 
-  try {
-    const result: { year: number; month: number }[] = await prisma.$queryRaw`
-      SELECT DISTINCT EXTRACT(YEAR FROM "createdAt") AS year, EXTRACT(MONTH FROM "createdAt") AS month
-      FROM "Expense"
-      WHERE "accountId" IN (
-        SELECT "id" FROM "Account" WHERE "ownerId" = ${userId}
-        UNION
-        SELECT "accountId" FROM "UserToAccount" WHERE "userId" = ${userId}
-      )
-      ORDER BY year DESC, month DESC;
-    `;
+//   try {
+//     const result: { year: number; month: number }[] = await prisma.$queryRaw`
+//       SELECT DISTINCT EXTRACT(YEAR FROM "createdAt") AS year, EXTRACT(MONTH FROM "createdAt") AS month
+//       FROM "Expense"
+//       WHERE "accountId" IN (
+//         SELECT "id" FROM "Account" WHERE "ownerId" = ${userId}
+//         UNION
+//         SELECT "accountId" FROM "UserToAccount" WHERE "userId" = ${userId}
+//       )
+//       ORDER BY year DESC, month DESC;
+//     `;
 
-    res.status(200).json({ response: result });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch expense months" });
-  }
-};
+//     res.status(200).json({ response: result });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Failed to fetch expense months" });
+//   }
+// }
 
-export const getMonthlySummary = async (req: Request, res: Response) => {
-  const userId = "";
-  const { year, month } = req.query;
+// async function getMonthlySummary(req: Request, res: Response) {
+//   const userId = "";
+//   const { year, month } = req.query;
 
-  if (!year || !month) {
-    res.status(400).json({ error: "Year and month are required" });
-  }
+//   if (!year || !month) {
+//     res.status(400).json({ error: "Year and month are required" });
+//   }
 
-  try {
-    const result = await prisma.$queryRaw`
-      SELECT
-        c.id AS "categoryId",
-        c.name AS "categoryName",
-        SUM(e.amount) AS "totalSpent"
-      FROM "Expense" e
-      JOIN "Category" c ON e."categoryId" = c.id
-      WHERE e."accountId" IN (
-        SELECT "id" FROM "Account" WHERE "ownerId" = ${userId}
-        UNION
-        SELECT "accountId" FROM "UserToAccount" WHERE "userId" = ${userId}
-      )
-      AND EXTRACT(YEAR FROM e."createdAt") = ${parseInt(year as string, 10)}
-      AND EXTRACT(MONTH FROM e."createdAt") = ${parseInt(month as string, 10)}
-      GROUP BY c.id, c.name
-      ORDER BY "totalSpent" DESC;
-    `;
+//   try {
+//     const result = await prisma.$queryRaw`
+//       SELECT
+//         c.id AS "categoryId",
+//         c.name AS "categoryName",
+//         SUM(e.amount) AS "totalSpent"
+//       FROM "Expense" e
+//       JOIN "Category" c ON e."categoryId" = c.id
+//       WHERE e."accountId" IN (
+//         SELECT "id" FROM "Account" WHERE "ownerId" = ${userId}
+//         UNION
+//         SELECT "accountId" FROM "UserToAccount" WHERE "userId" = ${userId}
+//       )
+//       AND EXTRACT(YEAR FROM e."createdAt") = ${parseInt(year as string, 10)}
+//       AND EXTRACT(MONTH FROM e."createdAt") = ${parseInt(month as string, 10)}
+//       GROUP BY c.id, c.name
+//       ORDER BY "totalSpent" DESC;
+//     `;
 
-    res.status(200).json({ response: result });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch monthly summary" });
-  }
-};
+//     res.status(200).json({ response: result });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Failed to fetch monthly summary" });
+//   }
+// }
 
-export const createExpense = async (req: Request, res: Response) => {
-  const { amount, accountId, categoryId, description } = req.body;
+export async function createExpense(req: Request, res: Response) {
+  const expense = await expensesServices.createExpense(req.body);
+  res.status(201).location(`/expense/${expense.id}`);
+}
 
-  if (!amount || !accountId || !categoryId) {
-    res.status(400).json({ error: "Missing required fields" });
-  }
+export async function changeExpense(req: Request, res: Response) {
+  await expensesServices.updateExpenses(req.body);
+  res.status(204);
+}
 
-  try {
-    const newExpense = await prisma.expense.create({
-      data: {
-        amount,
-        accountId,
-        categoryId,
-        description,
-        shared: false,
-      },
-    });
+export async function getExpense(req: Request, res: Response) {
+  const expense = await expensesServices.getExpense(req.body.id);
+  res.status(200).send({ response: expense });
+}
 
-    res.status(201).json({ response: newExpense });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create expense" });
-  }
-};
-
-export const changeExpense = async (req: Request, res: Response) => {
-  const { amount, accountId, categoryId, description } = req.body;
-
-  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-
-  try {
-    const updatedExpense = await prisma.expense.update({
-      where: { id },
-      data: {
-        amount,
-        accountId,
-        categoryId,
-        description,
-      },
-    });
-    res.status(200).json({ response: updatedExpense });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update expense" });
-  }
-};
-
-export const deleteExpense = async (req: Request, res: Response) => {
-  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  if (!id) {
-    res.status(400).send({ error: "Invalid expense ID" });
-  }
-
-  try {
-    await prisma.expense.delete({
-      where: { id },
-    });
-
-    res
-      .status(200)
-      .json({ message: `Expense with ID ${id} deleted successfully.` });
-  } catch (error) {
-    res.status(404).json({ error: "Expense not found or already deleted." });
-  }
-};
+export async function deleteExpense(req: Request, res: Response) {
+  await expensesServices.deleteExpense(req.body?.id);
+  res.status(204);
+}

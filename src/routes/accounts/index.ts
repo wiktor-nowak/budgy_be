@@ -2,23 +2,25 @@ import express, { Router } from "express";
 import {
   createAccount,
   deleteAccount,
-  editAccount,
+  updateAccount,
   getAccount,
   getAccountsCount,
   getAllAccounts,
   getMainAccount,
-  getMyAccounts,
+  getUserAccounts,
 } from "./accounts";
 
 const accounts: Router = express.Router();
 
-// accounts.get("/", getAllAccounts);
-// accounts.get("/:id", getAccount);
-// accounts.get("/main-account", getMainAccount);
-// accounts.get("/my-accounts", getMyAccounts);
+accounts.get("/", getUserAccounts);
+accounts.get("/:id", getAccount);
+accounts.get("/all", getAllAccounts);
+accounts.get("/main", getMainAccount);
 accounts.get("/count", getAccountsCount);
-// accounts.post("/", createAccount);
-// accounts.delete("/:id", deleteAccount);
-// accounts.patch("/:id", editAccount);
+accounts.post("/", createAccount);
+accounts.patch("/:id", updateAccount);
+accounts.delete("/:id", deleteAccount);
+
+// WORTH ADDING MIDDLEWARE CHECKING THE ROLE AND WHICH ROLE CAN DO WHICH ACTIONS!!!!
 
 export default accounts;

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/src/server.js",
   "scripts": {
-    "start": "tsc && node --env-file=.env dist/server.js"
+    "start": "ts-node -r tsconfig-paths/register src/server.ts --env-file=.env"
   },
   "keywords": [],
   "author": "",
@@ -11,7 +11,7 @@
   "description": "",
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
-    "@prisma/client": "^7.2.0",
+    "@prisma/client": "^7.3.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.7",
@@ -31,7 +31,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.19.6",
     "@types/pg": "^8.16.0",
-    "prisma": "^7.2.0",
-    "typescript": "^5.8.3"
+    "prisma": "^7.3.0",
+    "typescript": "^5.9.3"
   }
 }

@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { prisma } from "../lib/db/prisma";
 import { CookieOptions } from "express";
 
-export const REFRESH_TOKEN_OPTIONS: CookieOptions = {
+const REFRESH_TOKEN_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax",
@@ -10,16 +10,16 @@ export const REFRESH_TOKEN_OPTIONS: CookieOptions = {
 };
 
 // used in cookie
-export function generateRefreshToken(bytes: number = 64) {
+function generate(bytes: number = 64) {
   return crypto.randomBytes(bytes).toString("base64url");
 }
 
 // goes to DB
-export function hashRefreshToken(token: string): string {
+function hash(token: string): string {
   return crypto.createHash("sha256").update(token).digest("base64url");
 }
 
-export async function createRefreshTokenRecord(
+async function createRecord(
   tokenHash: string,
   userId: string,
   expiresAt: Date,
@@ -30,7 +30,7 @@ export async function createRefreshTokenRecord(
   return created;
 }
 
-export async function validateRefreshToken(tokenHash: string) {
+async function validate(tokenHash: string) {
   const token = await prisma.refreshToken.findUnique({
     where: { tokenHash },
   });
@@ -42,7 +42,7 @@ export async function validateRefreshToken(tokenHash: string) {
   return token;
 }
 
-export async function rotateRefreshToken(
+async function rotate(
   oldTokenHash: string,
   newTokenHash: string,
   userId: string,
@@ -80,7 +80,7 @@ export async function rotateRefreshToken(
 }
 
 // if a revoked token is reused!
-export async function detectReplay(tokenHash: string) {
+async function detectReplay(tokenHash: string) {
   const token = await prisma.refreshToken.findUnique({
     where: { tokenHash },
   });
@@ -96,7 +96,7 @@ export async function detectReplay(tokenHash: string) {
 
 // logout logic
 
-export async function revokeRefreshToken(tokenHash: string) {
+async function revoke(tokenHash: string) {
   await prisma.refreshToken.updateMany({
     // update many won't throw if we run this function on already revoked token
     where: {
@@ -109,7 +109,7 @@ export async function revokeRefreshToken(tokenHash: string) {
   });
 }
 
-export async function revokeAllUserRefreshTokens(userId: string) {
+async function revokeAll(userId: string) {
   await prisma.refreshToken.updateMany({
     where: {
       userId,
@@ -122,8 +122,7 @@ export async function revokeAllUserRefreshTokens(userId: string) {
 }
 
 // daily CRON job, cleanup unused TOKENS
-
-export async function cleanupExpiredRefreshTokens() {
+async function cleanupExpired() {
   await prisma.refreshToken.deleteMany({
     where: {
       expiresAt: {
@@ -133,6 +132,20 @@ export async function cleanupExpiredRefreshTokens() {
   });
 }
 
-export function setExpiresInDays(days: number): Date {
+function expiresInDays(days: number): Date {
   return new Date(Date.now() + 1000 * 60 * 60 * 24 * days);
 }
+
+export default {
+  createRecord,
+  cleanupExpired,
+  detectReplay,
+  generate,
+  hash,
+  REFRESH_TOKEN_OPTIONS,
+  revokeAll,
+  revoke,
+  rotate,
+  validate,
+  expiresInDays,
+};

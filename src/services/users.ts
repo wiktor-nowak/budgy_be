@@ -8,6 +8,10 @@ import {
   UpdateUserType,
 } from "../types/auth";
 import bcrypt from "bcrypt";
+import mailService from "./mail";
+import utilityServices from "./utility";
+import { mailer } from "../lib/emails/mailer";
+import { TransactionClient } from "../prisma/generated/internal/prismaNamespace";
 
 const SALT = 10;
 const USERS_SELECTED_COLUMNS = [
@@ -25,6 +29,9 @@ async function validateCredentials({ email, password }: LoginCredentials) {
   });
   if (!user) {
     throw new Error("Invalid credentials"); // actually user does not exist but we don't want to inform attacker about it.
+  }
+  if (!user?.isVerified) {
+    throw new AuthenticationError("Please verify your email first.");
   }
   const match = await bcrypt.compare(password, user.password); //can be extracted to separate function
   if (!match) {
@@ -64,15 +71,20 @@ async function getActiveUser(id: string) {
 }
 
 async function createUser(username: string, email: string, password: string) {
-  const hashedPassword = await bcrypt.hash(password, SALT);
-  const user: RegisterCredentials = {
-    username,
-    email,
-    password: hashedPassword,
-    role: Role.USER,
-  };
-  return await prisma.user.create({
-    data: user,
+  return prisma.$transaction(async (tx) => {
+    const hashedPassword = await bcrypt.hash(password, SALT);
+    const userData: RegisterCredentials = {
+      username,
+      email,
+      password: hashedPassword,
+      role: Role.USER,
+    };
+    const user = await tx.user.create({
+      data: userData,
+    });
+    await mailService.sendVeryficationEmail(user, tx as TransactionClient);
+
+    return user;
   });
 }
 

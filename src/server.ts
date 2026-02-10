@@ -26,12 +26,10 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.use("/accounts", accountsRoutes);
-app.use("/balance", balance);
-app.use("/categories", categoryRoutes);
-app.use("/expenses", expensesRoutes);
-app.use(authMiddleware);
-// authMiddleware works only for those above
+app.use("/accounts", authMiddleware, accountsRoutes);
+app.use("/balance", authMiddleware, balance);
+app.use("/categories", authMiddleware, categoryRoutes);
+app.use("/expenses", authMiddleware, expensesRoutes);
 
 app.use("/auth", authRoutes);
 app.use("/users", users);

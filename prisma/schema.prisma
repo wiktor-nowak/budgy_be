@@ -20,8 +20,11 @@ model User {
   role Role @default(USER)
   password String
   isVerified Boolean @default(false)
+
+  // Time / Date fields
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  verifiedAt DateTime?
   
   //Optional
   name String @default("")
@@ -32,8 +35,7 @@ model User {
   ownedAccounts Account[]
   sharedAccounts UserToAccount[]
   refreshTokens RefreshToken[]
-
-  @@unique([id])
+  emailTokens EmailVerificationToken[]
 }
 
 model Account {
@@ -53,8 +55,6 @@ model Account {
   expenses Expense[]
   monthlyBalances MonthlyBalance[]
   categories Category[]
-  
-  @@unique([id])
 }
 
 model UserToAccount {
@@ -78,8 +78,6 @@ model MonthlyBalance { // Month/Balance
   // Relations
   account Account @relation( fields: [accountId], references: [id])
   accountId String @db.Uuid
-
-  @@unique([id])
 }
 
 model Expense {
@@ -97,8 +95,6 @@ model Expense {
   accountId String @db.Uuid
   category Category @relation(fields: [categoryId], references: [id])
   categoryId String @db.Uuid
-
-  @@unique([id])
 }
 
 model Category {
@@ -112,8 +108,6 @@ model Category {
   account Account @relation(fields: [accountId], references: [id])
   accountId String @db.Uuid
   expenses Expense[]
-
-  @@unique([id])
 }
 
 model RefreshToken {
@@ -125,9 +119,20 @@ model RefreshToken {
   expiresAt   DateTime
   replacedBy  String?  @db.Text
   revoked     Boolean  @default(false)
-
-  @@unique([tokenHash])
 }
+
+
+model EmailVerificationToken {
+  id String @id @default(uuid()) @db.Uuid
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId  String @db.Uuid
+  user    User @relation(fields: [userId], references: [id])
+}
+
 
 enum Role {
   USER

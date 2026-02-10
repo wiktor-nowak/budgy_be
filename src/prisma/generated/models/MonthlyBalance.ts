@@ -242,7 +242,7 @@ export type MonthlyBalanceWhereUniqueInput = Prisma.AtLeast<{
   year?: Prisma.IntFilter<"MonthlyBalance"> | number
   accountId?: Prisma.UuidFilter<"MonthlyBalance"> | string
   account?: Prisma.XOR<Prisma.AccountScalarRelationFilter, Prisma.AccountWhereInput>
-}, "id" | "id">
+}, "id">
 
 export type MonthlyBalanceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

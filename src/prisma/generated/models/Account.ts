@@ -294,7 +294,7 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   expenses?: Prisma.ExpenseListRelationFilter
   monthlyBalances?: Prisma.MonthlyBalanceListRelationFilter
   categories?: Prisma.CategoryListRelationFilter
-}, "id" | "id">
+}, "id">
 
 export type AccountOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

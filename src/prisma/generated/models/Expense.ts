@@ -271,7 +271,7 @@ export type ExpenseWhereUniqueInput = Prisma.AtLeast<{
   categoryId?: Prisma.UuidFilter<"Expense"> | string
   account?: Prisma.XOR<Prisma.AccountScalarRelationFilter, Prisma.AccountWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
-}, "id" | "id">
+}, "id">
 
 export type ExpenseOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

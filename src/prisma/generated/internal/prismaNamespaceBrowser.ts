@@ -57,7 +57,8 @@ export const ModelName = {
   MonthlyBalance: 'MonthlyBalance',
   Expense: 'Expense',
   Category: 'Category',
-  RefreshToken: 'RefreshToken'
+  RefreshToken: 'RefreshToken',
+  EmailVerificationToken: 'EmailVerificationToken'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -85,6 +86,7 @@ export const UserScalarFieldEnum = {
   isVerified: 'isVerified',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  verifiedAt: 'verifiedAt',
   name: 'name',
   surname: 'surname',
   mainAccountId: 'mainAccountId'
@@ -164,6 +166,17 @@ export const RefreshTokenScalarFieldEnum = {
 } as const
 
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
+
+
+export const EmailVerificationTokenScalarFieldEnum = {
+  id: 'id',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  userId: 'userId'
+} as const
+
+export type EmailVerificationTokenScalarFieldEnum = (typeof EmailVerificationTokenScalarFieldEnum)[keyof typeof EmailVerificationTokenScalarFieldEnum]
 
 
 export const SortOrder = {

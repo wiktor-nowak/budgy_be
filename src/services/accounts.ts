@@ -1,9 +1,10 @@
 import { AccountData, UpdateAccountData } from "../types/account";
 import { prisma } from "../lib/db/prisma";
-import { AccountType, Role } from "../prisma/generated/enums";
+import { AccountType } from "../prisma/generated/enums";
 import { Prisma } from "../prisma/generated/client";
 import ResourceNotFoundError from "../errors/ResourceNotFoundError";
 import { CategoryEntry, GENERIC_CATEGORIES } from "../types/category";
+import categories from "./categories";
 
 async function createAccount({
   name,
@@ -14,12 +15,16 @@ async function createAccount({
   userId,
 }: AccountData) {
   const ownerId = type === AccountType.SHARED ? null : userId;
+
+  console.log(name, type, balance, description, setAsMain, userId);
+  console.log(ownerId);
+
   const createdAccount = await prisma.$transaction(async (tx) => {
     const account = await tx.account.create({
       data: {
         name,
         type,
-        balance: new Prisma.Decimal(balance),
+        balance,
         description,
         ownerId,
         lastMonthlyBalance: new Prisma.Decimal(0),
@@ -43,14 +48,12 @@ async function createAccount({
       });
     }
 
-    GENERIC_CATEGORIES.forEach(async (category: CategoryEntry) => {
-      await tx.category.create({
-        data: {
-          name: category.name,
-          shortcut: category.shortcut,
-          accountId: account.id,
-        },
-      });
+    await tx.category.createMany({
+      data: GENERIC_CATEGORIES.map((category) => ({
+        name: category.name,
+        shortcut: category.shortcut,
+        accountId: account.id,
+      })),
     });
 
     return account;
@@ -90,8 +93,11 @@ async function getUserAccounts(id: string) {
       OR: [{ ownerId: id }, { id: { in: sharedAccountIds } }],
     },
   });
-  if (!accounts || accounts.length === 0)
+  if (!accounts)
     throw new ResourceNotFoundError("No accounts assigned to this user.");
+  if (accounts.length === 0) {
+    return [];
+  }
   return accounts.map((acc) => ({
     id: acc.id,
     name: acc.name,
@@ -115,6 +121,12 @@ async function getAccount(id: string) {
               username: true,
             },
           },
+        },
+      },
+      categories: {
+        select: {
+          name: true,
+          shortcut: true,
         },
       },
     },

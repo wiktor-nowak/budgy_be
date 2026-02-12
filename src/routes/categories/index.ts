@@ -10,8 +10,8 @@ import {
 const categrories: Router = express.Router();
 
 categrories.get("/", getAllCategories);
-categrories.post("/", createCategory);
 categrories.get("/:id", getCategory);
+categrories.post("/", createCategory);
 categrories.delete("/:id", deleteCategory);
 categrories.patch("/:id", editCategory);
 

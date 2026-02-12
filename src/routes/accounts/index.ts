@@ -13,10 +13,14 @@ import {
 const accounts: Router = express.Router();
 
 accounts.get("/", getUserAccounts);
-accounts.get("/:id", getAccount);
+
 accounts.get("/all", getAllAccounts);
 accounts.get("/main", getMainAccount);
 accounts.get("/count", getAccountsCount);
+
+// last get is with parameter
+accounts.get("/:id", getAccount);
+
 accounts.post("/", createAccount);
 accounts.patch("/:id", updateAccount);
 accounts.delete("/:id", deleteAccount);

@@ -15,7 +15,8 @@ export const authMiddleware = (
 
   const token = authHeader.split(" ")[1];
   try {
-    req.auth = accessTokenService.verifyAccessToken(token);
+    const verifiedToken = accessTokenService.verifyAccessToken(token);
+    req.auth = verifiedToken;
     next();
   } catch (error) {
     throw new AuthenticationError(

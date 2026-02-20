@@ -31,6 +31,14 @@ export const getUserAccounts = async (req: Request, res: Response) => {
   res.status(200).send({ response: accounts });
 };
 
+export const getAccountsWithCategories = async (
+  req: Request,
+  res: Response,
+) => {
+  const accounts = await accountsService.getAccountsWithCategories(req.auth.id);
+  res.status(200).send({ response: accounts });
+};
+
 export const getAccountsCount = async (req: Request, res: Response) => {
   const len = await accountsService.getAccountsCount(req.auth.id);
   res.status(200).send({ response: len });
@@ -42,13 +50,12 @@ export const getAccount = async (req: Request, res: Response) => {
 };
 
 export const updateAccount = async (req: Request, res: Response) => {
-  const { id, name, balance, description, setAsMain } = req.body;
+  const { id, name, description, setAsMain } = req.body;
 
   await accountsService.updateAccount({
     accountId: id,
     userId: req.auth.id,
     name,
-    balance,
     description,
     setAsMain,
   });

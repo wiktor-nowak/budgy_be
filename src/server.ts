@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import accountsRoutes from "./routes/accounts";
 import authRoutes from "./routes/auth";
 import categoryRoutes from "./routes/categories";
-import expensesRoutes from "./routes/expenses";
+import transactionsRoutes from "./routes/transactions";
 import balance from "./routes/balance";
 import users from "./routes/users";
 
@@ -29,7 +29,7 @@ app.use(cookieParser());
 app.use("/accounts", authMiddleware, accountsRoutes);
 app.use("/balance", authMiddleware, balance);
 app.use("/categories", authMiddleware, categoryRoutes);
-app.use("/expenses", authMiddleware, expensesRoutes);
+app.use("/transactions", authMiddleware, transactionsRoutes); // ADD MIDDLEWARE
 
 app.use("/auth", authRoutes);
 app.use("/users", users);

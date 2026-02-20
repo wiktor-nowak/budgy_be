@@ -1,20 +1,21 @@
 import { Response, Request } from "express";
-import { prisma } from "../../lib/db/prisma";
-import expensesServices from "../../services/expenses";
+import transactionsServices from "../../services/transactions";
 
-export async function getAllExpenses(req: Request, res: Response) {
-  const expenses = await expensesServices.getAllExpenses(req.body.accountId);
-  res.status(200).send({ response: expenses });
+export async function getAllTransactions(req: Request, res: Response) {
+  const transactions = await transactionsServices.getAllTransactions(
+    req.body.accountId,
+  );
+  res.status(200).send({ response: transactions });
 }
 
-// async function getMonthExpenses(req: Request, res: Response) {
+// async function getMonthTransactions(req: Request, res: Response) {
 //   const userId = "";
 //   // const userId = req.user?.id;
 
 //   try {
 //     const result: { year: number; month: number }[] = await prisma.$queryRaw`
 //       SELECT DISTINCT EXTRACT(YEAR FROM "createdAt") AS year, EXTRACT(MONTH FROM "createdAt") AS month
-//       FROM "Expense"
+//       FROM "Transaction"
 //       WHERE "accountId" IN (
 //         SELECT "id" FROM "Account" WHERE "ownerId" = ${userId}
 //         UNION
@@ -26,7 +27,7 @@ export async function getAllExpenses(req: Request, res: Response) {
 //     res.status(200).json({ response: result });
 //   } catch (error) {
 //     console.error(error);
-//     res.status(500).json({ error: "Failed to fetch expense months" });
+//     res.status(500).json({ error: "Failed to fetch transaction months" });
 //   }
 // }
 
@@ -44,7 +45,7 @@ export async function getAllExpenses(req: Request, res: Response) {
 //         c.id AS "categoryId",
 //         c.name AS "categoryName",
 //         SUM(e.amount) AS "totalSpent"
-//       FROM "Expense" e
+//       FROM "Transaction" e
 //       JOIN "Category" c ON e."categoryId" = c.id
 //       WHERE e."accountId" IN (
 //         SELECT "id" FROM "Account" WHERE "ownerId" = ${userId}
@@ -64,22 +65,24 @@ export async function getAllExpenses(req: Request, res: Response) {
 //   }
 // }
 
-export async function createExpense(req: Request, res: Response) {
-  const expense = await expensesServices.createExpense(req.body);
-  res.status(201).location(`/expense/${expense.id}`);
+export async function createTransaction(req: Request, res: Response) {
+  const transaction = await transactionsServices.createTransaction(req.body);
+  res.status(201).location(`/transaction/${transaction.id}`);
+  // also can return body of tranaction
 }
 
-export async function changeExpense(req: Request, res: Response) {
-  await expensesServices.updateExpenses(req.body);
+export async function changeTransaction(req: Request, res: Response) {
+  await transactionsServices.updateTransaction(req.body);
   res.status(204);
+  // possibly 200 with body of new transaction?
 }
 
-export async function getExpense(req: Request, res: Response) {
-  const expense = await expensesServices.getExpense(req.body.id);
-  res.status(200).send({ response: expense });
+export async function getTransaction(req: Request, res: Response) {
+  const transaction = await transactionsServices.getTransaction(req.body.id);
+  res.status(200).send({ response: transaction });
 }
 
-export async function deleteExpense(req: Request, res: Response) {
-  await expensesServices.deleteExpense(req.body?.id);
+export async function deleteTransaction(req: Request, res: Response) {
+  await transactionsServices.deleteTransaction(req.body?.id);
   res.status(204);
 }

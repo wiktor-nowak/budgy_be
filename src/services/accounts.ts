@@ -1,33 +1,25 @@
 import { AccountData, UpdateAccountData } from "../types/account";
 import { prisma } from "../lib/db/prisma";
 import { AccountType } from "../prisma/generated/enums";
-import { Prisma } from "../prisma/generated/client";
 import ResourceNotFoundError from "../errors/ResourceNotFoundError";
-import { CategoryEntry, GENERIC_CATEGORIES } from "../types/category";
-import categories from "./categories";
+import { GENERIC_CATEGORIES } from "../types/category";
 
 async function createAccount({
   name,
   type,
-  balance,
   description,
   setAsMain,
   userId,
 }: AccountData) {
   const ownerId = type === AccountType.SHARED ? null : userId;
 
-  console.log(name, type, balance, description, setAsMain, userId);
-  console.log(ownerId);
-
   const createdAccount = await prisma.$transaction(async (tx) => {
     const account = await tx.account.create({
       data: {
         name,
         type,
-        balance,
         description,
         ownerId,
-        lastMonthlyBalance: new Prisma.Decimal(0),
       },
     });
 
@@ -102,7 +94,31 @@ async function getUserAccounts(id: string) {
     id: acc.id,
     name: acc.name,
     type: acc.type,
+    balance: acc.balance,
   }));
+}
+
+async function getAccountsWithCategories(id: string) {
+  const sharedAccountLinks = await prisma.userToAccount.findMany({
+    where: { userId: id },
+    select: { accountId: true },
+  });
+  const sharedAccountIds = sharedAccountLinks.map((link) => link.accountId);
+  return await prisma.account.findMany({
+    where: {
+      OR: [{ ownerId: id }, { id: { in: sharedAccountIds } }],
+    },
+    select: {
+      id: true,
+      name: true,
+      categories: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
 }
 
 async function getAccount(id: string) {
@@ -141,7 +157,6 @@ async function getAccountsCount(id: string) {
 
 async function updateAccount({
   name,
-  balance,
   description,
   setAsMain,
   userId,
@@ -158,7 +173,6 @@ async function updateAccount({
       where: { id: accountId },
       data: {
         name,
-        balance: Prisma.Decimal(balance),
         description,
       },
     });
@@ -183,4 +197,5 @@ export default {
   deleteAccount,
   // shareAccount,
   updateAccount,
+  getAccountsWithCategories,
 };

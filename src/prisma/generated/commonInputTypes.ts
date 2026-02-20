@@ -263,13 +263,6 @@ export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
 }
 
-export type EnumMonthFilter<$PrismaModel = never> = {
-  equals?: $Enums.Month | Prisma.EnumMonthFieldRefInput<$PrismaModel>
-  in?: $Enums.Month[] | Prisma.ListEnumMonthFieldRefInput<$PrismaModel>
-  notIn?: $Enums.Month[] | Prisma.ListEnumMonthFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumMonthFilter<$PrismaModel> | $Enums.Month
-}
-
 export type IntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -279,16 +272,6 @@ export type IntFilter<$PrismaModel = never> = {
   gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
   gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
   not?: Prisma.NestedIntFilter<$PrismaModel> | number
-}
-
-export type EnumMonthWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.Month | Prisma.EnumMonthFieldRefInput<$PrismaModel>
-  in?: $Enums.Month[] | Prisma.ListEnumMonthFieldRefInput<$PrismaModel>
-  notIn?: $Enums.Month[] | Prisma.ListEnumMonthFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumMonthWithAggregatesFilter<$PrismaModel> | $Enums.Month
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumMonthFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumMonthFilter<$PrismaModel>
 }
 
 export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -563,23 +546,6 @@ export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedStringNullableFilter<$PrismaModel>
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
-}
-
-export type NestedEnumMonthFilter<$PrismaModel = never> = {
-  equals?: $Enums.Month | Prisma.EnumMonthFieldRefInput<$PrismaModel>
-  in?: $Enums.Month[] | Prisma.ListEnumMonthFieldRefInput<$PrismaModel>
-  notIn?: $Enums.Month[] | Prisma.ListEnumMonthFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumMonthFilter<$PrismaModel> | $Enums.Month
-}
-
-export type NestedEnumMonthWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.Month | Prisma.EnumMonthFieldRefInput<$PrismaModel>
-  in?: $Enums.Month[] | Prisma.ListEnumMonthFieldRefInput<$PrismaModel>
-  notIn?: $Enums.Month[] | Prisma.ListEnumMonthFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumMonthWithAggregatesFilter<$PrismaModel> | $Enums.Month
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumMonthFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumMonthFilter<$PrismaModel>
 }
 
 export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {

@@ -25,20 +25,3 @@ export const AccountType = {
 } as const
 
 export type AccountType = (typeof AccountType)[keyof typeof AccountType]
-
-
-export const Month = {
-  JANUARY: 'JANUARY',
-  FEBRUARY: 'FEBRUARY',
-  MARCH: 'MARCH',
-  APRIL: 'APRIL',
-  MAY: 'MAY',
-  JUNE: 'JUNE',
-  JULY: 'JULY',
-  AUGUST: 'AUGUST',
-  SEPTEMBER: 'SEPTEMBER',
-  OCTOBER: 'OCTOBER',
-  NOVEMBER: 'NOVEMBER'
-} as const
-
-export type Month = (typeof Month)[keyof typeof Month]

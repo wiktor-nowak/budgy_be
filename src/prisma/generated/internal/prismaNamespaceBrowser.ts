@@ -54,9 +54,10 @@ export const ModelName = {
   User: 'User',
   Account: 'Account',
   UserToAccount: 'UserToAccount',
-  MonthlyBalance: 'MonthlyBalance',
-  Expense: 'Expense',
+  Transaction: 'Transaction',
   Category: 'Category',
+  MonthlySummary: 'MonthlySummary',
+  MonthlyCategorySummary: 'MonthlyCategorySummary',
   RefreshToken: 'RefreshToken',
   EmailVerificationToken: 'EmailVerificationToken'
 } as const
@@ -99,9 +100,8 @@ export const AccountScalarFieldEnum = {
   id: 'id',
   name: 'name',
   type: 'type',
-  balance: 'balance',
-  lastMonthlyBalance: 'lastMonthlyBalance',
   description: 'description',
+  balance: 'balance',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   ownerId: 'ownerId'
@@ -119,21 +119,10 @@ export const UserToAccountScalarFieldEnum = {
 export type UserToAccountScalarFieldEnum = (typeof UserToAccountScalarFieldEnum)[keyof typeof UserToAccountScalarFieldEnum]
 
 
-export const MonthlyBalanceScalarFieldEnum = {
-  id: 'id',
-  balance: 'balance',
-  month: 'month',
-  year: 'year',
-  accountId: 'accountId'
-} as const
-
-export type MonthlyBalanceScalarFieldEnum = (typeof MonthlyBalanceScalarFieldEnum)[keyof typeof MonthlyBalanceScalarFieldEnum]
-
-
-export const ExpenseScalarFieldEnum = {
+export const TransactionScalarFieldEnum = {
   id: 'id',
   amount: 'amount',
-  shared: 'shared',
+  transactionDate: 'transactionDate',
   description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -141,7 +130,7 @@ export const ExpenseScalarFieldEnum = {
   categoryId: 'categoryId'
 } as const
 
-export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
+export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum]
 
 
 export const CategoryScalarFieldEnum = {
@@ -154,6 +143,32 @@ export const CategoryScalarFieldEnum = {
 } as const
 
 export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
+
+
+export const MonthlySummaryScalarFieldEnum = {
+  id: 'id',
+  year: 'year',
+  month: 'month',
+  openingBalance: 'openingBalance',
+  totalIncome: 'totalIncome',
+  totalExpense: 'totalExpense',
+  closingBalance: 'closingBalance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  accountId: 'accountId'
+} as const
+
+export type MonthlySummaryScalarFieldEnum = (typeof MonthlySummaryScalarFieldEnum)[keyof typeof MonthlySummaryScalarFieldEnum]
+
+
+export const MonthlyCategorySummaryScalarFieldEnum = {
+  id: 'id',
+  totalAmount: 'totalAmount',
+  monthlySummaryId: 'monthlySummaryId',
+  categoryId: 'categoryId'
+} as const
+
+export type MonthlyCategorySummaryScalarFieldEnum = (typeof MonthlyCategorySummaryScalarFieldEnum)[keyof typeof MonthlyCategorySummaryScalarFieldEnum]
 
 
 export const RefreshTokenScalarFieldEnum = {

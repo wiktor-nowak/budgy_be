@@ -8,6 +8,7 @@ import {
   getAllAccounts,
   getMainAccount,
   getUserAccounts,
+  getAccountsWithCategories,
 } from "./accounts";
 
 const accounts: Router = express.Router();
@@ -17,7 +18,7 @@ accounts.get("/", getUserAccounts);
 accounts.get("/all", getAllAccounts);
 accounts.get("/main", getMainAccount);
 accounts.get("/count", getAccountsCount);
-
+accounts.get("/with-categories", getAccountsWithCategories);
 // last get is with parameter
 accounts.get("/:id", getAccount);
 

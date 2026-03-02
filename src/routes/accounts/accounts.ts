@@ -18,7 +18,10 @@ export const createAccount = async (req: Request, res: Response) => {
     ...req.body,
     userId: req.auth.id,
   });
-  res.status(201).location(`/accounts/${newAccount.id}`);
+  res
+    .status(201)
+    .location(`/accounts/${newAccount.id}`)
+    .send({ response: newAccount });
 };
 
 export const deleteAccount = async (req: Request, res: Response) => {

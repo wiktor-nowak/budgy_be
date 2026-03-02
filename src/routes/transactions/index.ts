@@ -3,13 +3,14 @@ import {
   changeTransaction,
   createTransaction,
   deleteTransaction,
-  getAllTransactions,
+  getUserTransactions,
   getTransaction,
 } from "./transactions";
 
 const expenses: Router = express.Router();
 
-expenses.get("/", getAllTransactions);
+expenses.get("/", getUserTransactions);
+// get transactions per account -> pass acc ID as parameter -> ?
 // expenses.get("/months", getMonthTransactions);
 // expenses.get("/monthly-summary", getMonthlySummary);
 expenses.get("/:id", getTransaction);

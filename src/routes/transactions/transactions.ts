@@ -1,9 +1,16 @@
 import { Response, Request } from "express";
 import transactionsServices from "../../services/transactions";
 
-export async function getAllTransactions(req: Request, res: Response) {
-  const transactions = await transactionsServices.getAllTransactions(
+export async function getAccountTransactions(req: Request, res: Response) {
+  const transactions = await transactionsServices.getAccountTransactions(
     req.body.accountId,
+  );
+  res.status(200).send({ response: transactions });
+}
+
+export async function getUserTransactions(req: Request, res: Response) {
+  const transactions = await transactionsServices.getUserTransactions(
+    req.auth.id,
   );
   res.status(200).send({ response: transactions });
 }
@@ -67,8 +74,10 @@ export async function getAllTransactions(req: Request, res: Response) {
 
 export async function createTransaction(req: Request, res: Response) {
   const transaction = await transactionsServices.createTransaction(req.body);
-  res.status(201).location(`/transaction/${transaction.id}`);
-  // also can return body of tranaction
+  res
+    .status(201)
+    .location(`/transaction/${transaction.id}`)
+    .send({ response: transaction });
 }
 
 export async function changeTransaction(req: Request, res: Response) {

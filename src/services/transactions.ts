@@ -2,10 +2,11 @@ import { prisma } from "../lib/db/prisma";
 import { Prisma, PrismaClient } from "../prisma/generated/client";
 import { ModifyTransactionData, TransactionData } from "../types/transaction";
 import utilityServices from "./utility";
+import ResourceNotFoundError from "../errors/ResourceNotFoundError";
 
 const FIXED_INCLUDE = {
   account: {
-    select: { type: true },
+    select: { name: true },
   },
   category: {
     select: { name: true },
@@ -14,8 +15,12 @@ const FIXED_INCLUDE = {
 
 async function createTransaction(data: TransactionData) {
   return await prisma.$transaction(async (tx) => {
+    const transactionData = {
+      ...data,
+      transactionDate: new Date(data.transactionDate),
+    };
     const transaction = await tx.transaction.create({
-      data: data,
+      data: transactionData,
     });
     console.log(transaction);
     const updatedAccount = await tx.account.update({
@@ -28,7 +33,7 @@ async function createTransaction(data: TransactionData) {
     });
     console.log(updatedAccount);
 
-    await updateBalanceSources(data, tx as Prisma.TransactionClient);
+    await updateBalanceSources(transactionData, tx as Prisma.TransactionClient);
 
     return transaction;
   });
@@ -40,7 +45,41 @@ async function getTransaction(id: string) {
     include: FIXED_INCLUDE,
   });
 }
-async function getAllTransactions(id: string) {
+async function getUserTransactions(id: string) {
+  const sharedAccountLinks = await prisma.userToAccount.findMany({
+    where: { userId: id },
+    select: { accountId: true },
+  });
+  const sharedAccountIds = sharedAccountLinks.map((link) => link.accountId);
+  const accounts = await prisma.account.findMany({
+    where: {
+      OR: [{ ownerId: id }, { id: { in: sharedAccountIds } }],
+    },
+  });
+  if (!accounts)
+    throw new ResourceNotFoundError("No accounts assigned to this user.");
+  const accountIds = accounts.map((acc) => acc.id);
+
+  const transactions = await prisma.transaction.findMany({
+    where: { accountId: { in: accountIds } },
+    include: FIXED_INCLUDE,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return transactions.map((transaction) => ({
+    accountId: transaction.accountId,
+    accountName: transaction.account.name,
+    category: transaction.category.name,
+    id: transaction.id,
+    amount: transaction.amount,
+    transactionDate: transaction.transactionDate,
+    description: transaction.description,
+  }));
+}
+
+async function getAccountTransactions(id: string) {
   return await prisma.transaction.findMany({
     where: { accountId: id },
     include: FIXED_INCLUDE,
@@ -49,6 +88,7 @@ async function getAllTransactions(id: string) {
     },
   });
 }
+
 async function getMonthlyTransactions() {}
 async function getMonthlySummary() {}
 async function getMonthlyTransactionsPerCategory() {}
@@ -282,12 +322,13 @@ async function updateBalanceSources(
 
 export default {
   createTransaction,
-  getAllTransactions,
+  getUserTransactions,
   getTransaction,
   getMonthlyTransactions,
   getMonthlySummary,
   deleteTransaction,
   updateTransaction,
+  getAccountTransactions,
 };
 
 //   for (const group of categoryGroups) {

@@ -1,7 +1,6 @@
 import express, { Router } from "express";
-import { authMiddleware } from "../../middleware/authentication";
 import {
-  addCategory,
+  createCategory,
   deleteCategory,
   editCategory,
   getAllCategories,
@@ -10,10 +9,10 @@ import {
 
 const categrories: Router = express.Router();
 
-categrories.get("/", authMiddleware, getAllCategories);
-categrories.post("/", authMiddleware, addCategory);
-categrories.get("/:id", authMiddleware, getCategory);
-categrories.delete("/:id", authMiddleware, deleteCategory);
-categrories.patch("/:id", authMiddleware, editCategory);
+categrories.get("/", getAllCategories);
+categrories.get("/:id", getCategory);
+categrories.post("/", createCategory);
+categrories.delete("/:id", deleteCategory);
+categrories.patch("/:id", editCategory);
 
 export default categrories;

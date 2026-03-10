@@ -1,31 +1,26 @@
 import { Response, Request, NextFunction } from "express";
 import AuthenticationError from "../errors/AuthenticationError";
-import { verifyAccessToken } from "../service/accessToken";
+import accessTokenService from "../services/accessToken";
 
 export const authMiddleware = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new AuthenticationError({
-      message: "Authorization header missing or malformed.",
-      statusCode: 401,
-      code: "ERR_AUTH",
-    });
+    throw new AuthenticationError("Authorization header missing or malformed.");
   }
 
   const token = authHeader.split(" ")[1];
   try {
-    req.auth = verifyAccessToken(token);
+    const verifiedToken = accessTokenService.verifyAccessToken(token);
+    req.auth = verifiedToken;
     next();
   } catch (error) {
-    throw new AuthenticationError({
-      message: "You are not authorized to perform this operation.",
-      statusCode: 403,
-      code: "ERR_AUTH",
-    });
+    throw new AuthenticationError(
+      "You are not authorized to perform this operation.",
+    );
   }
 };

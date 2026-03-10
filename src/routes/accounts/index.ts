@@ -1,23 +1,31 @@
 import express, { Router } from "express";
-import { authMiddleware } from "../../middleware/authentication";
 import {
   createAccount,
   deleteAccount,
-  editAccount,
+  updateAccount,
   getAccount,
+  getAccountsCount,
   getAllAccounts,
   getMainAccount,
-  getMyAccounts,
+  getUserAccounts,
+  getAccountsWithCategories,
 } from "./accounts";
 
 const accounts: Router = express.Router();
 
-accounts.get("/", authMiddleware, getAllAccounts);
-accounts.get("/:id", authMiddleware, getAccount);
-accounts.get("/main-account", authMiddleware, getMainAccount);
-accounts.get("/my-accounts", authMiddleware, getMyAccounts);
-accounts.post("/", authMiddleware, createAccount);
-accounts.delete("/:id", authMiddleware, deleteAccount);
-accounts.patch("/:id", authMiddleware, editAccount);
+accounts.get("/", getUserAccounts);
+
+accounts.get("/all", getAllAccounts);
+accounts.get("/main", getMainAccount);
+accounts.get("/count", getAccountsCount);
+accounts.get("/with-categories", getAccountsWithCategories);
+// last get is with parameter
+accounts.get("/:id", getAccount);
+
+accounts.post("/", createAccount);
+accounts.patch("/:id", updateAccount);
+accounts.delete("/:id", deleteAccount);
+
+// WORTH ADDING MIDDLEWARE CHECKING THE ROLE AND WHICH ROLE CAN DO WHICH ACTIONS!!!!
 
 export default accounts;

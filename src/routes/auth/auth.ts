@@ -1,116 +1,93 @@
 import { Response, Request } from "express";
 
-import {
-  createRefreshTokenRecord,
-  generateRefreshToken,
-  hashRefreshToken,
-  revokeAllUserRefreshTokens,
-  revokeRefreshToken,
-  rotateRefreshToken,
-  setExpiresInDays,
-  validateRefreshToken,
-} from "../../service/refreshToken";
-import { signAccessToken } from "../../service/accessToken";
-import { parseLoginRequest } from "../../service/credentials";
-import { LoginCredentials } from "../../types/credentials";
-import { validateUserCredentials } from "../users/users";
+import refreshTokenService from "../../services/refreshToken";
+import accessTokenService from "../../services/accessToken";
+import credentialsService from "../../services/credentials";
+import usersService from "../../services/users";
+import AuthenticationError from "../../errors/AuthenticationError";
+import utilityService from "../../services/utility";
+import mailService from "../../services/mail";
 
 export async function loginHandler(req: Request, res: Response) {
-  try {
-    const credentials: LoginCredentials = parseLoginRequest(req.body);
-    const validatedUserId = await validateUserCredentials(credentials);
+  const credentials = credentialsService.parseLoginRequest(req.body);
+  const userId = await usersService.validateCredentials(credentials);
+  const accessToken = accessTokenService.signAccessToken({
+    id: userId,
+  });
+  const refreshToken = refreshTokenService.generate();
+  await refreshTokenService.createRecord(
+    refreshTokenService.hash(refreshToken),
+    userId,
+    utilityService.expiresInDays(30),
+  );
 
-    // issue new access token
-    const accessToken = signAccessToken({
-      sub: validatedUserId,
-    });
-
-    //generate new refresh token
-    const newRefreshToken = generateRefreshToken();
-    const newHashedRefreshToken = hashRefreshToken(newRefreshToken);
-    const x = await createRefreshTokenRecord(
-      newHashedRefreshToken,
-      validatedUserId,
-      setExpiresInDays(30),
-    );
-
-    console.log(x);
-
-    res.cookie("refresh_token", newRefreshToken, {
-      httpOnly: true,
-      // secure: true // set while on server
-      sameSite: "lax",
-      path: "/auth/refresh",
-    });
-
-    res.status(200).send({
-      message: `User ${validatedUserId} successfully logged in!`,
-      token: accessToken,
-    });
-  } catch (error) {
-    res.status(500).send({ error: error, info: "WTF" });
-  }
+  res.cookie(
+    "refresh_token",
+    refreshToken,
+    refreshTokenService.REFRESH_TOKEN_OPTIONS,
+  );
+  res.status(200).send({
+    message: `User successfully logged in!`,
+    accessToken: accessToken,
+  });
 }
 
 export async function logoutHandler(req: Request, res: Response) {
   const rawToken = req.cookies?.refresh_token;
-  if (!rawToken) {
-    return res.sendStatus(401); // add sending message!
+  if (rawToken) {
+    await refreshTokenService.revoke(refreshTokenService.hash(rawToken));
   }
-  const tokenHash = hashRefreshToken(rawToken);
-  revokeRefreshToken(tokenHash);
-  res.clearCookie("refresh_token", {
-    httpOnly: true,
-    // secure: true // set while on server
-    sameSite: "lax",
-    path: "/auth/refresh",
-  });
+
+  res.clearCookie("refresh_token", refreshTokenService.REFRESH_TOKEN_OPTIONS);
+
+  res.sendStatus(204);
 }
 
 export async function refreshHandler(req: Request, res: Response) {
-  console.log(req.cookies);
-  const rawToken = req.cookies?.refresh_token;
-  console.log(rawToken);
-  if (!rawToken) {
-    return res.sendStatus(401); // add sending message!
-  }
-  const tokenHash = hashRefreshToken(rawToken);
-  const existing = await validateRefreshToken(tokenHash);
-  if (!existing) {
-    return res.sendStatus(401);
-  }
+  const rawToken = req.cookies.refresh_token;
+  if (!rawToken) throw new AuthenticationError();
+  const hashedToken = refreshTokenService.hash(rawToken);
+  const existingRefreshToken = await refreshTokenService.validate(hashedToken);
+  if (!existingRefreshToken) throw new AuthenticationError();
 
-  //generate new refresh token
-  const newRefreshToken = generateRefreshToken();
-  const newHashedRefreshToken = hashRefreshToken(newRefreshToken);
+  const newRefreshToken = refreshTokenService.generate();
+  const newHashedRefreshToken = refreshTokenService.hash(newRefreshToken);
 
   try {
-    await rotateRefreshToken(
-      tokenHash,
+    await refreshTokenService.rotate(
+      hashedToken,
       newHashedRefreshToken,
-      existing.userId,
-      setExpiresInDays(30),
+      existingRefreshToken.userId,
+      utilityService.expiresInDays(30),
     );
   } catch (error) {
-    await revokeAllUserRefreshTokens(existing.userId);
-    return res.sendStatus(401);
+    await refreshTokenService.revokeAll(existingRefreshToken.userId);
+    throw new AuthenticationError("Session invalidated");
   }
 
-  // issue new access token
-  const accessToken = signAccessToken({
-    sub: existing.userId,
+  const accessToken = accessTokenService.signAccessToken({
+    id: existingRefreshToken.userId,
   });
 
-  // set new refresh cookie
-  res.cookie("refresh_token", newRefreshToken, {
-    httpOnly: true,
-    // secure: true // set while on server
-    sameSite: "lax",
-    path: "/auth/refresh",
-  });
+  res.cookie(
+    "refresh_token",
+    newRefreshToken,
+    refreshTokenService.REFRESH_TOKEN_OPTIONS,
+  );
 
   return res.status(200).send({
-    message: `User ${existing.userId} successfully authenticated!`,
-    token: accessToken,
+    message: `User successfully authenticated!`,
+    accessToken: accessToken,
   });
+}
+
+export async function verifyEmail(req: Request, res: Response) {
+  const { token } = req.query;
+  const match = await mailService.verifyEmail(String(token));
+  res.redirect(`${process.env.FRONTEND_URL}/verified?match=${String(!!match)}`);
+}
+
+export async function reVerifyEmail(req: Request, res: Response) {
+  await mailService.regenerateToken(req.body?.email);
+  res.status(204);
 }

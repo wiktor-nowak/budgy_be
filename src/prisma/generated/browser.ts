@@ -33,22 +33,32 @@ export type Account = Prisma.AccountModel
  */
 export type UserToAccount = Prisma.UserToAccountModel
 /**
- * Model MonthlyBalance
+ * Model Transaction
  * 
  */
-export type MonthlyBalance = Prisma.MonthlyBalanceModel
-/**
- * Model Expense
- * 
- */
-export type Expense = Prisma.ExpenseModel
+export type Transaction = Prisma.TransactionModel
 /**
  * Model Category
  * 
  */
 export type Category = Prisma.CategoryModel
 /**
+ * Model MonthlySummary
+ * 
+ */
+export type MonthlySummary = Prisma.MonthlySummaryModel
+/**
+ * Model MonthlyCategorySummary
+ * 
+ */
+export type MonthlyCategorySummary = Prisma.MonthlyCategorySummaryModel
+/**
  * Model RefreshToken
  * 
  */
 export type RefreshToken = Prisma.RefreshTokenModel
+/**
+ * Model EmailVerificationToken
+ * 
+ */
+export type EmailVerificationToken = Prisma.EmailVerificationTokenModel

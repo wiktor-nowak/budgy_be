@@ -214,7 +214,7 @@ export type RefreshTokenWhereUniqueInput = Prisma.AtLeast<{
   replacedBy?: Prisma.StringNullableFilter<"RefreshToken"> | string | null
   revoked?: Prisma.BoolFilter<"RefreshToken"> | boolean
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "tokenHash" | "tokenHash">
+}, "tokenHash">
 
 export type RefreshTokenOrderByWithAggregationInput = {
   tokenHash?: Prisma.SortOrder

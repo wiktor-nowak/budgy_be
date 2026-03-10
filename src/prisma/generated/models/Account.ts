@@ -28,21 +28,18 @@ export type AggregateAccount = {
 
 export type AccountAvgAggregateOutputType = {
   balance: runtime.Decimal | null
-  lastMonthlyBalance: runtime.Decimal | null
 }
 
 export type AccountSumAggregateOutputType = {
   balance: runtime.Decimal | null
-  lastMonthlyBalance: runtime.Decimal | null
 }
 
 export type AccountMinAggregateOutputType = {
   id: string | null
   name: string | null
   type: $Enums.AccountType | null
-  balance: runtime.Decimal | null
-  lastMonthlyBalance: runtime.Decimal | null
   description: string | null
+  balance: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
   ownerId: string | null
@@ -52,9 +49,8 @@ export type AccountMaxAggregateOutputType = {
   id: string | null
   name: string | null
   type: $Enums.AccountType | null
-  balance: runtime.Decimal | null
-  lastMonthlyBalance: runtime.Decimal | null
   description: string | null
+  balance: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
   ownerId: string | null
@@ -64,9 +60,8 @@ export type AccountCountAggregateOutputType = {
   id: number
   name: number
   type: number
-  balance: number
-  lastMonthlyBalance: number
   description: number
+  balance: number
   createdAt: number
   updatedAt: number
   ownerId: number
@@ -76,21 +71,18 @@ export type AccountCountAggregateOutputType = {
 
 export type AccountAvgAggregateInputType = {
   balance?: true
-  lastMonthlyBalance?: true
 }
 
 export type AccountSumAggregateInputType = {
   balance?: true
-  lastMonthlyBalance?: true
 }
 
 export type AccountMinAggregateInputType = {
   id?: true
   name?: true
   type?: true
-  balance?: true
-  lastMonthlyBalance?: true
   description?: true
+  balance?: true
   createdAt?: true
   updatedAt?: true
   ownerId?: true
@@ -100,9 +92,8 @@ export type AccountMaxAggregateInputType = {
   id?: true
   name?: true
   type?: true
-  balance?: true
-  lastMonthlyBalance?: true
   description?: true
+  balance?: true
   createdAt?: true
   updatedAt?: true
   ownerId?: true
@@ -112,9 +103,8 @@ export type AccountCountAggregateInputType = {
   id?: true
   name?: true
   type?: true
-  balance?: true
-  lastMonthlyBalance?: true
   description?: true
+  balance?: true
   createdAt?: true
   updatedAt?: true
   ownerId?: true
@@ -211,9 +201,8 @@ export type AccountGroupByOutputType = {
   id: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal
-  lastMonthlyBalance: runtime.Decimal
   description: string | null
+  balance: runtime.Decimal
   createdAt: Date
   updatedAt: Date
   ownerId: string | null
@@ -246,32 +235,32 @@ export type AccountWhereInput = {
   id?: Prisma.UuidFilter<"Account"> | string
   name?: Prisma.StringFilter<"Account"> | string
   type?: Prisma.EnumAccountTypeFilter<"Account"> | $Enums.AccountType
-  balance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringNullableFilter<"Account"> | string | null
+  balance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   ownerId?: Prisma.UuidNullableFilter<"Account"> | string | null
   owner?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   coOwners?: Prisma.UserToAccountListRelationFilter
-  expenses?: Prisma.ExpenseListRelationFilter
-  monthlyBalances?: Prisma.MonthlyBalanceListRelationFilter
+  transactions?: Prisma.TransactionListRelationFilter
+  monthlySummaries?: Prisma.MonthlySummaryListRelationFilter
+  categories?: Prisma.CategoryListRelationFilter
 }
 
 export type AccountOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  balance?: Prisma.SortOrder
-  lastMonthlyBalance?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  balance?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ownerId?: Prisma.SortOrderInput | Prisma.SortOrder
   owner?: Prisma.UserOrderByWithRelationInput
   coOwners?: Prisma.UserToAccountOrderByRelationAggregateInput
-  expenses?: Prisma.ExpenseOrderByRelationAggregateInput
-  monthlyBalances?: Prisma.MonthlyBalanceOrderByRelationAggregateInput
+  transactions?: Prisma.TransactionOrderByRelationAggregateInput
+  monthlySummaries?: Prisma.MonthlySummaryOrderByRelationAggregateInput
+  categories?: Prisma.CategoryOrderByRelationAggregateInput
 }
 
 export type AccountWhereUniqueInput = Prisma.AtLeast<{
@@ -281,25 +270,24 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   name?: Prisma.StringFilter<"Account"> | string
   type?: Prisma.EnumAccountTypeFilter<"Account"> | $Enums.AccountType
-  balance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringNullableFilter<"Account"> | string | null
+  balance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   ownerId?: Prisma.UuidNullableFilter<"Account"> | string | null
   owner?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   coOwners?: Prisma.UserToAccountListRelationFilter
-  expenses?: Prisma.ExpenseListRelationFilter
-  monthlyBalances?: Prisma.MonthlyBalanceListRelationFilter
-}, "id" | "id">
+  transactions?: Prisma.TransactionListRelationFilter
+  monthlySummaries?: Prisma.MonthlySummaryListRelationFilter
+  categories?: Prisma.CategoryListRelationFilter
+}, "id">
 
 export type AccountOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  balance?: Prisma.SortOrder
-  lastMonthlyBalance?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  balance?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ownerId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -317,9 +305,8 @@ export type AccountScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"Account"> | string
   name?: Prisma.StringWithAggregatesFilter<"Account"> | string
   type?: Prisma.EnumAccountTypeWithAggregatesFilter<"Account"> | $Enums.AccountType
-  balance?: Prisma.DecimalWithAggregatesFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalWithAggregatesFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
+  balance?: Prisma.DecimalWithAggregatesFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
   ownerId?: Prisma.UuidNullableWithAggregatesFilter<"Account"> | string | null
@@ -329,69 +316,68 @@ export type AccountCreateInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
   coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
-  monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUncheckedCreateInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   ownerId?: string | null
   coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
-  monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
   coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
-  expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
-  monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
-  monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountCreateManyInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   ownerId?: string | null
@@ -401,9 +387,8 @@ export type AccountUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -412,9 +397,8 @@ export type AccountUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -434,9 +418,8 @@ export type AccountCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  balance?: Prisma.SortOrder
-  lastMonthlyBalance?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  balance?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
@@ -444,16 +427,14 @@ export type AccountCountOrderByAggregateInput = {
 
 export type AccountAvgOrderByAggregateInput = {
   balance?: Prisma.SortOrder
-  lastMonthlyBalance?: Prisma.SortOrder
 }
 
 export type AccountMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  balance?: Prisma.SortOrder
-  lastMonthlyBalance?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  balance?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
@@ -463,9 +444,8 @@ export type AccountMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  balance?: Prisma.SortOrder
-  lastMonthlyBalance?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  balance?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
@@ -473,7 +453,6 @@ export type AccountMinOrderByAggregateInput = {
 
 export type AccountSumOrderByAggregateInput = {
   balance?: Prisma.SortOrder
-  lastMonthlyBalance?: Prisma.SortOrder
 }
 
 export type AccountScalarRelationFilter = {
@@ -549,60 +528,74 @@ export type AccountUpdateOneRequiredWithoutCoOwnersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutCoOwnersInput, Prisma.AccountUpdateWithoutCoOwnersInput>, Prisma.AccountUncheckedUpdateWithoutCoOwnersInput>
 }
 
-export type AccountCreateNestedOneWithoutMonthlyBalancesInput = {
-  create?: Prisma.XOR<Prisma.AccountCreateWithoutMonthlyBalancesInput, Prisma.AccountUncheckedCreateWithoutMonthlyBalancesInput>
-  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutMonthlyBalancesInput
+export type AccountCreateNestedOneWithoutTransactionsInput = {
+  create?: Prisma.XOR<Prisma.AccountCreateWithoutTransactionsInput, Prisma.AccountUncheckedCreateWithoutTransactionsInput>
+  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutTransactionsInput
   connect?: Prisma.AccountWhereUniqueInput
 }
 
-export type AccountUpdateOneRequiredWithoutMonthlyBalancesNestedInput = {
-  create?: Prisma.XOR<Prisma.AccountCreateWithoutMonthlyBalancesInput, Prisma.AccountUncheckedCreateWithoutMonthlyBalancesInput>
-  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutMonthlyBalancesInput
-  upsert?: Prisma.AccountUpsertWithoutMonthlyBalancesInput
+export type AccountUpdateOneRequiredWithoutTransactionsNestedInput = {
+  create?: Prisma.XOR<Prisma.AccountCreateWithoutTransactionsInput, Prisma.AccountUncheckedCreateWithoutTransactionsInput>
+  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutTransactionsInput
+  upsert?: Prisma.AccountUpsertWithoutTransactionsInput
   connect?: Prisma.AccountWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutMonthlyBalancesInput, Prisma.AccountUpdateWithoutMonthlyBalancesInput>, Prisma.AccountUncheckedUpdateWithoutMonthlyBalancesInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutTransactionsInput, Prisma.AccountUpdateWithoutTransactionsInput>, Prisma.AccountUncheckedUpdateWithoutTransactionsInput>
 }
 
-export type AccountCreateNestedOneWithoutExpensesInput = {
-  create?: Prisma.XOR<Prisma.AccountCreateWithoutExpensesInput, Prisma.AccountUncheckedCreateWithoutExpensesInput>
-  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutExpensesInput
+export type AccountCreateNestedOneWithoutCategoriesInput = {
+  create?: Prisma.XOR<Prisma.AccountCreateWithoutCategoriesInput, Prisma.AccountUncheckedCreateWithoutCategoriesInput>
+  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutCategoriesInput
   connect?: Prisma.AccountWhereUniqueInput
 }
 
-export type AccountUpdateOneRequiredWithoutExpensesNestedInput = {
-  create?: Prisma.XOR<Prisma.AccountCreateWithoutExpensesInput, Prisma.AccountUncheckedCreateWithoutExpensesInput>
-  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutExpensesInput
-  upsert?: Prisma.AccountUpsertWithoutExpensesInput
+export type AccountUpdateOneRequiredWithoutCategoriesNestedInput = {
+  create?: Prisma.XOR<Prisma.AccountCreateWithoutCategoriesInput, Prisma.AccountUncheckedCreateWithoutCategoriesInput>
+  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutCategoriesInput
+  upsert?: Prisma.AccountUpsertWithoutCategoriesInput
   connect?: Prisma.AccountWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutExpensesInput, Prisma.AccountUpdateWithoutExpensesInput>, Prisma.AccountUncheckedUpdateWithoutExpensesInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutCategoriesInput, Prisma.AccountUpdateWithoutCategoriesInput>, Prisma.AccountUncheckedUpdateWithoutCategoriesInput>
+}
+
+export type AccountCreateNestedOneWithoutMonthlySummariesInput = {
+  create?: Prisma.XOR<Prisma.AccountCreateWithoutMonthlySummariesInput, Prisma.AccountUncheckedCreateWithoutMonthlySummariesInput>
+  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutMonthlySummariesInput
+  connect?: Prisma.AccountWhereUniqueInput
+}
+
+export type AccountUpdateOneRequiredWithoutMonthlySummariesNestedInput = {
+  create?: Prisma.XOR<Prisma.AccountCreateWithoutMonthlySummariesInput, Prisma.AccountUncheckedCreateWithoutMonthlySummariesInput>
+  connectOrCreate?: Prisma.AccountCreateOrConnectWithoutMonthlySummariesInput
+  upsert?: Prisma.AccountUpsertWithoutMonthlySummariesInput
+  connect?: Prisma.AccountWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutMonthlySummariesInput, Prisma.AccountUpdateWithoutMonthlySummariesInput>, Prisma.AccountUncheckedUpdateWithoutMonthlySummariesInput>
 }
 
 export type AccountCreateWithoutOwnerInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
-  monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUncheckedCreateWithoutOwnerInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
-  monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type AccountCreateOrConnectWithoutOwnerInput = {
@@ -638,9 +631,8 @@ export type AccountScalarWhereInput = {
   id?: Prisma.UuidFilter<"Account"> | string
   name?: Prisma.StringFilter<"Account"> | string
   type?: Prisma.EnumAccountTypeFilter<"Account"> | $Enums.AccountType
-  balance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringNullableFilter<"Account"> | string | null
+  balance?: Prisma.DecimalFilter<"Account"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   ownerId?: Prisma.UuidNullableFilter<"Account"> | string | null
@@ -650,28 +642,28 @@ export type AccountCreateWithoutCoOwnersInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
-  monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
 export type AccountUncheckedCreateWithoutCoOwnersInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   ownerId?: string | null
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
-  monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type AccountCreateOrConnectWithoutCoOwnersInput = {
@@ -694,181 +686,252 @@ export type AccountUpdateWithoutCoOwnersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
-  expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
-  monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateWithoutCoOwnersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
-  monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
-export type AccountCreateWithoutMonthlyBalancesInput = {
+export type AccountCreateWithoutTransactionsInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
   coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
 }
 
-export type AccountUncheckedCreateWithoutMonthlyBalancesInput = {
+export type AccountUncheckedCreateWithoutTransactionsInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   ownerId?: string | null
   coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
 }
 
-export type AccountCreateOrConnectWithoutMonthlyBalancesInput = {
+export type AccountCreateOrConnectWithoutTransactionsInput = {
   where: Prisma.AccountWhereUniqueInput
-  create: Prisma.XOR<Prisma.AccountCreateWithoutMonthlyBalancesInput, Prisma.AccountUncheckedCreateWithoutMonthlyBalancesInput>
+  create: Prisma.XOR<Prisma.AccountCreateWithoutTransactionsInput, Prisma.AccountUncheckedCreateWithoutTransactionsInput>
 }
 
-export type AccountUpsertWithoutMonthlyBalancesInput = {
-  update: Prisma.XOR<Prisma.AccountUpdateWithoutMonthlyBalancesInput, Prisma.AccountUncheckedUpdateWithoutMonthlyBalancesInput>
-  create: Prisma.XOR<Prisma.AccountCreateWithoutMonthlyBalancesInput, Prisma.AccountUncheckedCreateWithoutMonthlyBalancesInput>
+export type AccountUpsertWithoutTransactionsInput = {
+  update: Prisma.XOR<Prisma.AccountUpdateWithoutTransactionsInput, Prisma.AccountUncheckedUpdateWithoutTransactionsInput>
+  create: Prisma.XOR<Prisma.AccountCreateWithoutTransactionsInput, Prisma.AccountUncheckedCreateWithoutTransactionsInput>
   where?: Prisma.AccountWhereInput
 }
 
-export type AccountUpdateToOneWithWhereWithoutMonthlyBalancesInput = {
+export type AccountUpdateToOneWithWhereWithoutTransactionsInput = {
   where?: Prisma.AccountWhereInput
-  data: Prisma.XOR<Prisma.AccountUpdateWithoutMonthlyBalancesInput, Prisma.AccountUncheckedUpdateWithoutMonthlyBalancesInput>
+  data: Prisma.XOR<Prisma.AccountUpdateWithoutTransactionsInput, Prisma.AccountUncheckedUpdateWithoutTransactionsInput>
 }
 
-export type AccountUpdateWithoutMonthlyBalancesInput = {
+export type AccountUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
   coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
-  expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
-export type AccountUncheckedUpdateWithoutMonthlyBalancesInput = {
+export type AccountUncheckedUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
-export type AccountCreateWithoutExpensesInput = {
+export type AccountCreateWithoutCategoriesInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
   coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
-  monthlyBalances?: Prisma.MonthlyBalanceCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryCreateNestedManyWithoutAccountInput
 }
 
-export type AccountUncheckedCreateWithoutExpensesInput = {
+export type AccountUncheckedCreateWithoutCategoriesInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   ownerId?: string | null
   coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
-  monthlyBalances?: Prisma.MonthlyBalanceUncheckedCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutAccountInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedCreateNestedManyWithoutAccountInput
 }
 
-export type AccountCreateOrConnectWithoutExpensesInput = {
+export type AccountCreateOrConnectWithoutCategoriesInput = {
   where: Prisma.AccountWhereUniqueInput
-  create: Prisma.XOR<Prisma.AccountCreateWithoutExpensesInput, Prisma.AccountUncheckedCreateWithoutExpensesInput>
+  create: Prisma.XOR<Prisma.AccountCreateWithoutCategoriesInput, Prisma.AccountUncheckedCreateWithoutCategoriesInput>
 }
 
-export type AccountUpsertWithoutExpensesInput = {
-  update: Prisma.XOR<Prisma.AccountUpdateWithoutExpensesInput, Prisma.AccountUncheckedUpdateWithoutExpensesInput>
-  create: Prisma.XOR<Prisma.AccountCreateWithoutExpensesInput, Prisma.AccountUncheckedCreateWithoutExpensesInput>
+export type AccountUpsertWithoutCategoriesInput = {
+  update: Prisma.XOR<Prisma.AccountUpdateWithoutCategoriesInput, Prisma.AccountUncheckedUpdateWithoutCategoriesInput>
+  create: Prisma.XOR<Prisma.AccountCreateWithoutCategoriesInput, Prisma.AccountUncheckedCreateWithoutCategoriesInput>
   where?: Prisma.AccountWhereInput
 }
 
-export type AccountUpdateToOneWithWhereWithoutExpensesInput = {
+export type AccountUpdateToOneWithWhereWithoutCategoriesInput = {
   where?: Prisma.AccountWhereInput
-  data: Prisma.XOR<Prisma.AccountUpdateWithoutExpensesInput, Prisma.AccountUncheckedUpdateWithoutExpensesInput>
+  data: Prisma.XOR<Prisma.AccountUpdateWithoutCategoriesInput, Prisma.AccountUncheckedUpdateWithoutCategoriesInput>
 }
 
-export type AccountUpdateWithoutExpensesInput = {
+export type AccountUpdateWithoutCategoriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
   coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
-  monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUpdateManyWithoutAccountNestedInput
 }
 
-export type AccountUncheckedUpdateWithoutExpensesInput = {
+export type AccountUncheckedUpdateWithoutCategoriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
-  monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedUpdateManyWithoutAccountNestedInput
+}
+
+export type AccountCreateWithoutMonthlySummariesInput = {
+  id?: string
+  name: string
+  type: $Enums.AccountType
+  description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner?: Prisma.UserCreateNestedOneWithoutOwnedAccountsInput
+  coOwners?: Prisma.UserToAccountCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutAccountInput
+}
+
+export type AccountUncheckedCreateWithoutMonthlySummariesInput = {
+  id?: string
+  name: string
+  type: $Enums.AccountType
+  description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ownerId?: string | null
+  coOwners?: Prisma.UserToAccountUncheckedCreateNestedManyWithoutAccountInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutAccountInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutAccountInput
+}
+
+export type AccountCreateOrConnectWithoutMonthlySummariesInput = {
+  where: Prisma.AccountWhereUniqueInput
+  create: Prisma.XOR<Prisma.AccountCreateWithoutMonthlySummariesInput, Prisma.AccountUncheckedCreateWithoutMonthlySummariesInput>
+}
+
+export type AccountUpsertWithoutMonthlySummariesInput = {
+  update: Prisma.XOR<Prisma.AccountUpdateWithoutMonthlySummariesInput, Prisma.AccountUncheckedUpdateWithoutMonthlySummariesInput>
+  create: Prisma.XOR<Prisma.AccountCreateWithoutMonthlySummariesInput, Prisma.AccountUncheckedCreateWithoutMonthlySummariesInput>
+  where?: Prisma.AccountWhereInput
+}
+
+export type AccountUpdateToOneWithWhereWithoutMonthlySummariesInput = {
+  where?: Prisma.AccountWhereInput
+  data: Prisma.XOR<Prisma.AccountUpdateWithoutMonthlySummariesInput, Prisma.AccountUncheckedUpdateWithoutMonthlySummariesInput>
+}
+
+export type AccountUpdateWithoutMonthlySummariesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneWithoutOwnedAccountsNestedInput
+  coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
+}
+
+export type AccountUncheckedUpdateWithoutMonthlySummariesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountCreateManyOwnerInput = {
   id?: string
   name: string
   type: $Enums.AccountType
-  balance: runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
+  balance?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -877,37 +940,36 @@ export type AccountUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   coOwners?: Prisma.UserToAccountUpdateManyWithoutAccountNestedInput
-  expenses?: Prisma.ExpenseUpdateManyWithoutAccountNestedInput
-  monthlyBalances?: Prisma.MonthlyBalanceUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   coOwners?: Prisma.UserToAccountUncheckedUpdateManyWithoutAccountNestedInput
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutAccountNestedInput
-  monthlyBalances?: Prisma.MonthlyBalanceUncheckedUpdateManyWithoutAccountNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutAccountNestedInput
+  monthlySummaries?: Prisma.MonthlySummaryUncheckedUpdateManyWithoutAccountNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type AccountUncheckedUpdateManyWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
-  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  lastMonthlyBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -919,14 +981,16 @@ export type AccountUncheckedUpdateManyWithoutOwnerInput = {
 
 export type AccountCountOutputType = {
   coOwners: number
-  expenses: number
-  monthlyBalances: number
+  transactions: number
+  monthlySummaries: number
+  categories: number
 }
 
 export type AccountCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   coOwners?: boolean | AccountCountOutputTypeCountCoOwnersArgs
-  expenses?: boolean | AccountCountOutputTypeCountExpensesArgs
-  monthlyBalances?: boolean | AccountCountOutputTypeCountMonthlyBalancesArgs
+  transactions?: boolean | AccountCountOutputTypeCountTransactionsArgs
+  monthlySummaries?: boolean | AccountCountOutputTypeCountMonthlySummariesArgs
+  categories?: boolean | AccountCountOutputTypeCountCategoriesArgs
 }
 
 /**
@@ -949,15 +1013,22 @@ export type AccountCountOutputTypeCountCoOwnersArgs<ExtArgs extends runtime.Type
 /**
  * AccountCountOutputType without action
  */
-export type AccountCountOutputTypeCountExpensesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ExpenseWhereInput
+export type AccountCountOutputTypeCountTransactionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TransactionWhereInput
 }
 
 /**
  * AccountCountOutputType without action
  */
-export type AccountCountOutputTypeCountMonthlyBalancesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.MonthlyBalanceWhereInput
+export type AccountCountOutputTypeCountMonthlySummariesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MonthlySummaryWhereInput
+}
+
+/**
+ * AccountCountOutputType without action
+ */
+export type AccountCountOutputTypeCountCategoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CategoryWhereInput
 }
 
 
@@ -965,16 +1036,16 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   name?: boolean
   type?: boolean
-  balance?: boolean
-  lastMonthlyBalance?: boolean
   description?: boolean
+  balance?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   ownerId?: boolean
   owner?: boolean | Prisma.Account$ownerArgs<ExtArgs>
   coOwners?: boolean | Prisma.Account$coOwnersArgs<ExtArgs>
-  expenses?: boolean | Prisma.Account$expensesArgs<ExtArgs>
-  monthlyBalances?: boolean | Prisma.Account$monthlyBalancesArgs<ExtArgs>
+  transactions?: boolean | Prisma.Account$transactionsArgs<ExtArgs>
+  monthlySummaries?: boolean | Prisma.Account$monthlySummariesArgs<ExtArgs>
+  categories?: boolean | Prisma.Account$categoriesArgs<ExtArgs>
   _count?: boolean | Prisma.AccountCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["account"]>
 
@@ -982,9 +1053,8 @@ export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   name?: boolean
   type?: boolean
-  balance?: boolean
-  lastMonthlyBalance?: boolean
   description?: boolean
+  balance?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   ownerId?: boolean
@@ -995,9 +1065,8 @@ export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   name?: boolean
   type?: boolean
-  balance?: boolean
-  lastMonthlyBalance?: boolean
   description?: boolean
+  balance?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   ownerId?: boolean
@@ -1008,20 +1077,20 @@ export type AccountSelectScalar = {
   id?: boolean
   name?: boolean
   type?: boolean
-  balance?: boolean
-  lastMonthlyBalance?: boolean
   description?: boolean
+  balance?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   ownerId?: boolean
 }
 
-export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "balance" | "lastMonthlyBalance" | "description" | "createdAt" | "updatedAt" | "ownerId", ExtArgs["result"]["account"]>
+export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "description" | "balance" | "createdAt" | "updatedAt" | "ownerId", ExtArgs["result"]["account"]>
 export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.Account$ownerArgs<ExtArgs>
   coOwners?: boolean | Prisma.Account$coOwnersArgs<ExtArgs>
-  expenses?: boolean | Prisma.Account$expensesArgs<ExtArgs>
-  monthlyBalances?: boolean | Prisma.Account$monthlyBalancesArgs<ExtArgs>
+  transactions?: boolean | Prisma.Account$transactionsArgs<ExtArgs>
+  monthlySummaries?: boolean | Prisma.Account$monthlySummariesArgs<ExtArgs>
+  categories?: boolean | Prisma.Account$categoriesArgs<ExtArgs>
   _count?: boolean | Prisma.AccountCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type AccountIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1036,16 +1105,16 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   objects: {
     owner: Prisma.$UserPayload<ExtArgs> | null
     coOwners: Prisma.$UserToAccountPayload<ExtArgs>[]
-    expenses: Prisma.$ExpensePayload<ExtArgs>[]
-    monthlyBalances: Prisma.$MonthlyBalancePayload<ExtArgs>[]
+    transactions: Prisma.$TransactionPayload<ExtArgs>[]
+    monthlySummaries: Prisma.$MonthlySummaryPayload<ExtArgs>[]
+    categories: Prisma.$CategoryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
     type: $Enums.AccountType
-    balance: runtime.Decimal
-    lastMonthlyBalance: runtime.Decimal
     description: string | null
+    balance: runtime.Decimal
     createdAt: Date
     updatedAt: Date
     ownerId: string | null
@@ -1445,8 +1514,9 @@ export interface Prisma__AccountClient<T, Null = never, ExtArgs extends runtime.
   readonly [Symbol.toStringTag]: "PrismaPromise"
   owner<T extends Prisma.Account$ownerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$ownerArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   coOwners<T extends Prisma.Account$coOwnersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$coOwnersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserToAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  expenses<T extends Prisma.Account$expensesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  monthlyBalances<T extends Prisma.Account$monthlyBalancesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$monthlyBalancesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MonthlyBalancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  transactions<T extends Prisma.Account$transactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  monthlySummaries<T extends Prisma.Account$monthlySummariesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$monthlySummariesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MonthlySummaryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  categories<T extends Prisma.Account$categoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Account$categoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1479,9 +1549,8 @@ export interface AccountFieldRefs {
   readonly id: Prisma.FieldRef<"Account", 'String'>
   readonly name: Prisma.FieldRef<"Account", 'String'>
   readonly type: Prisma.FieldRef<"Account", 'AccountType'>
-  readonly balance: Prisma.FieldRef<"Account", 'Decimal'>
-  readonly lastMonthlyBalance: Prisma.FieldRef<"Account", 'Decimal'>
   readonly description: Prisma.FieldRef<"Account", 'String'>
+  readonly balance: Prisma.FieldRef<"Account", 'Decimal'>
   readonly createdAt: Prisma.FieldRef<"Account", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Account", 'DateTime'>
   readonly ownerId: Prisma.FieldRef<"Account", 'String'>
@@ -1924,51 +1993,75 @@ export type Account$coOwnersArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
- * Account.expenses
+ * Account.transactions
  */
-export type Account$expensesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Account$transactionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Expense
+   * Select specific fields to fetch from the Transaction
    */
-  select?: Prisma.ExpenseSelect<ExtArgs> | null
+  select?: Prisma.TransactionSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Expense
+   * Omit specific fields from the Transaction
    */
-  omit?: Prisma.ExpenseOmit<ExtArgs> | null
+  omit?: Prisma.TransactionOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ExpenseInclude<ExtArgs> | null
-  where?: Prisma.ExpenseWhereInput
-  orderBy?: Prisma.ExpenseOrderByWithRelationInput | Prisma.ExpenseOrderByWithRelationInput[]
-  cursor?: Prisma.ExpenseWhereUniqueInput
+  include?: Prisma.TransactionInclude<ExtArgs> | null
+  where?: Prisma.TransactionWhereInput
+  orderBy?: Prisma.TransactionOrderByWithRelationInput | Prisma.TransactionOrderByWithRelationInput[]
+  cursor?: Prisma.TransactionWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ExpenseScalarFieldEnum | Prisma.ExpenseScalarFieldEnum[]
+  distinct?: Prisma.TransactionScalarFieldEnum | Prisma.TransactionScalarFieldEnum[]
 }
 
 /**
- * Account.monthlyBalances
+ * Account.monthlySummaries
  */
-export type Account$monthlyBalancesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Account$monthlySummariesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the MonthlyBalance
+   * Select specific fields to fetch from the MonthlySummary
    */
-  select?: Prisma.MonthlyBalanceSelect<ExtArgs> | null
+  select?: Prisma.MonthlySummarySelect<ExtArgs> | null
   /**
-   * Omit specific fields from the MonthlyBalance
+   * Omit specific fields from the MonthlySummary
    */
-  omit?: Prisma.MonthlyBalanceOmit<ExtArgs> | null
+  omit?: Prisma.MonthlySummaryOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.MonthlyBalanceInclude<ExtArgs> | null
-  where?: Prisma.MonthlyBalanceWhereInput
-  orderBy?: Prisma.MonthlyBalanceOrderByWithRelationInput | Prisma.MonthlyBalanceOrderByWithRelationInput[]
-  cursor?: Prisma.MonthlyBalanceWhereUniqueInput
+  include?: Prisma.MonthlySummaryInclude<ExtArgs> | null
+  where?: Prisma.MonthlySummaryWhereInput
+  orderBy?: Prisma.MonthlySummaryOrderByWithRelationInput | Prisma.MonthlySummaryOrderByWithRelationInput[]
+  cursor?: Prisma.MonthlySummaryWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.MonthlyBalanceScalarFieldEnum | Prisma.MonthlyBalanceScalarFieldEnum[]
+  distinct?: Prisma.MonthlySummaryScalarFieldEnum | Prisma.MonthlySummaryScalarFieldEnum[]
+}
+
+/**
+ * Account.categories
+ */
+export type Account$categoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Category
+   */
+  select?: Prisma.CategorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Category
+   */
+  omit?: Prisma.CategoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CategoryInclude<ExtArgs> | null
+  where?: Prisma.CategoryWhereInput
+  orderBy?: Prisma.CategoryOrderByWithRelationInput | Prisma.CategoryOrderByWithRelationInput[]
+  cursor?: Prisma.CategoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CategoryScalarFieldEnum | Prisma.CategoryScalarFieldEnum[]
 }
 
 /**

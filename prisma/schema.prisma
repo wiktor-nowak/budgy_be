@@ -19,8 +19,12 @@ model User {
   email String @unique
   role Role @default(USER)
   password String
+  isVerified Boolean @default(false)
+
+  // Time / Date fields
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  verifiedAt DateTime?
   
   //Optional
   name String @default("")
@@ -31,28 +35,30 @@ model User {
   ownedAccounts Account[]
   sharedAccounts UserToAccount[]
   refreshTokens RefreshToken[]
-
-  @@unique([id])
+  emailTokens EmailVerificationToken[]
 }
 
 model Account {
-  id String @id @default(uuid()) @db.Uuid
-  name String
-  type AccountType
-  balance Decimal  @db.Decimal(12, 2)
-  lastMonthlyBalance Decimal  @db.Decimal(12, 2)
-  description String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  type          AccountType
+  description   String?
+
+  // Running balance (derived, updated atomically)
+  balance     Decimal  @db.Decimal(14, 2) @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   // Relations
-  owner User? @relation(fields: [ownerId], references: [id])
-  ownerId String? @db.Uuid
-  coOwners UserToAccount[]
-  expenses Expense[]
-  monthlyBalances MonthlyBalance[]
-  
-  @@unique([id])
+  ownerId           String?  @db.Uuid
+  owner             User?    @relation(fields: [ownerId], references: [id])
+  coOwners          UserToAccount[] 
+  transactions      Transaction[]
+  monthlySummaries  MonthlySummary[]
+  categories        Category[]
+
+  @@index([ownerId])
 }
 
 model UserToAccount {
@@ -66,50 +72,78 @@ model UserToAccount {
   @@id([userId, accountId])
 }
 
-model MonthlyBalance { // Month/Balance
-  id String @id @default(uuid()) @db.Uuid
+model Transaction {
+  id              String   @id @default(uuid()) @db.Uuid
+  amount          Decimal  @db.Decimal(14, 2) // signed (+income / -expense)
+  transactionDate DateTime // business date (critical)
+  description     String?
 
-  balance Decimal  @db.Decimal(12, 2)
-  month Month
-  year Int
+  // DB Values
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  account Account @relation( fields: [accountId], references: [id])
-  accountId String @db.Uuid
+  accountId       String   @db.Uuid
+  account         Account  @relation(fields: [accountId], references: [id])
+  categoryId      String   @db.Uuid
+  category        Category @relation(fields: [categoryId], references: [id])
 
-  @@unique([id])
-}
-
-model Expense {
-  id String @id @default(uuid()) @db.Uuid
-  amount Decimal  @db.Decimal(12, 2)
-  shared Boolean
-  description String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Balance after.
-  
-  // Relations
-  account Account @relation(fields: [accountId], references: [id])
-  accountId String @db.Uuid
-  category Category @relation(fields: [categoryId], references: [id])
-  categoryId String @db.Uuid
-
-  @@unique([id])
+  @@index([accountId, transactionDate])
+  @@index([accountId, categoryId])
 }
 
 model Category {
-  id String @id @default(uuid()) @db.Uuid
-  name String
-  shortcut String
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  shortcut  String
+
+  // DB Values
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  expenses Expense[]
+  accountId                 String   @db.Uuid
+  account                   Account  @relation(fields: [accountId], references: [id])
+  transactions              Transaction[]
+  monthlyCategorySummaries  MonthlyCategorySummary[]
 
-  @@unique([id])
+  @@unique([accountId, shortcut])
+  @@index([accountId])
+}
+
+model MonthlySummary {
+  id            String   @id @default(uuid()) @db.Uuid
+  year          Int
+  month         Int      // 1–12
+  openingBalance Decimal @db.Decimal(14, 2)
+  totalIncome    Decimal @db.Decimal(14, 2)
+  totalExpense   Decimal @db.Decimal(14, 2)
+  closingBalance Decimal @db.Decimal(14, 2)
+
+  // DB Values
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Realtions
+  accountId     String   @db.Uuid
+  account       Account  @relation(fields: [accountId], references: [id])
+  categorySummaries MonthlyCategorySummary[]
+
+  @@unique([accountId, year, month])
+  @@index([accountId])
+}
+
+model MonthlyCategorySummary {
+  id               String   @id @default(uuid()) @db.Uuid
+  totalAmount      Decimal  @db.Decimal(14, 2)
+
+  // Relations
+  monthlySummaryId String   @db.Uuid
+  monthlySummary   MonthlySummary @relation(fields: [monthlySummaryId], references: [id])
+  categoryId       String   @db.Uuid
+  category         Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([monthlySummaryId, categoryId])
 }
 
 model RefreshToken {
@@ -121,9 +155,20 @@ model RefreshToken {
   expiresAt   DateTime
   replacedBy  String?  @db.Text
   revoked     Boolean  @default(false)
-
-  @@unique([tokenHash])
 }
+
+
+model EmailVerificationToken {
+  id String @id @default(uuid()) @db.Uuid
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId  String @db.Uuid
+  user    User @relation(fields: [userId], references: [id])
+}
+
 
 enum Role {
   USER
@@ -137,16 +182,4 @@ enum AccountType {
   SHARED
 }
 
-enum Month {
-  JANUARY
-  FEBRUARY
-  MARCH
-  APRIL
-  MAY
-  JUNE
-  JULY
-  AUGUST
-  SEPTEMBER
-  OCTOBER
-  NOVEMBER
-}
+

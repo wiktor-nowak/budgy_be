@@ -41,7 +41,7 @@ async function createTransaction(data: TransactionData) {
 }
 
 async function getTransaction(id: string) {
-  return await prisma.transaction.findMany({
+  return await prisma.transaction.findUnique({
     where: { id },
     include: FIXED_INCLUDE,
   });
@@ -94,31 +94,56 @@ async function getMonthlyTransactions() {}
 async function getMonthlySummary() {}
 async function getMonthlyTransactionsPerCategory() {}
 
-async function updateTransaction(data: ModifyTransactionData) {
+async function updateTransaction(data: TransactionData, id: string) {
   const modifyTransactionData = {
     ...data,
     transactionDate: new Date(data.transactionDate),
   };
   return await prisma.$transaction(async (tx) => {
     const deletedTransaction = await tx.transaction.delete({
-      where: { id: modifyTransactionData.id },
+      where: { id },
     });
-    console.log(deletedTransaction);
+    // console.log(deletedTransaction);
     const transaction = await tx.transaction.create({
       data: modifyTransactionData,
     });
-    console.log(transaction);
-    const updatedAccount = await tx.account.update({
-      where: { id: modifyTransactionData.accountId },
-      data: {
-        balance: {
-          increment: modifyTransactionData.amount.minus(
-            deletedTransaction.amount,
-          ),
+    // console.log(transaction);
+
+    const newAmount = new Prisma.Decimal(modifyTransactionData.amount);
+    const oldAmount = deletedTransaction.amount;
+
+    const sameAccount =
+      deletedTransaction.accountId === modifyTransactionData.accountId;
+
+    if (sameAccount) {
+      const diff = newAmount.minus(oldAmount);
+      const updatedAccount = await tx.account.update({
+        where: { id: modifyTransactionData.accountId },
+        data: {
+          balance: {
+            increment: diff.toNumber(),
+          },
         },
-      },
-    });
-    console.log(updatedAccount);
+      });
+      // console.log(updatedAccount);
+    } else {
+      await tx.account.update({
+        where: { id: deletedTransaction.accountId },
+        data: {
+          balance: {
+            decrement: oldAmount.toNumber(),
+          },
+        },
+      });
+      await tx.account.update({
+        where: { id: modifyTransactionData.accountId },
+        data: {
+          balance: {
+            increment: newAmount.toNumber(),
+          },
+        },
+      });
+    }
 
     if (
       deletedTransaction.transactionDate.getTime() >
@@ -141,7 +166,7 @@ async function deleteTransaction(id: string) {
     const deletedTransaction = await tx.transaction.delete({
       where: { id },
     });
-    console.log(deletedTransaction);
+    // console.log(deletedTransaction);
     const updatedAccount = await tx.account.update({
       where: { id: deletedTransaction.accountId },
       data: {
@@ -150,7 +175,7 @@ async function deleteTransaction(id: string) {
         },
       },
     });
-    console.log(updatedAccount);
+    // console.log(updatedAccount);
 
     await updateBalanceSources(
       deletedTransaction,

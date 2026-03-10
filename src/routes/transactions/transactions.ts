@@ -81,17 +81,27 @@ export async function createTransaction(req: Request, res: Response) {
 }
 
 export async function changeTransaction(req: Request, res: Response) {
-  await transactionsServices.updateTransaction(req.body);
-  res.status(204);
-  // possibly 200 with body of new transaction?
+  const txId = req.params.id as string;
+  const transaction = await transactionsServices.updateTransaction(
+    req.body,
+    txId,
+  );
+  res
+    .status(200)
+    .location(`/transaction/${transaction.id}`)
+    .send({ response: transaction });
 }
 
 export async function getTransaction(req: Request, res: Response) {
-  const transaction = await transactionsServices.getTransaction(req.body.id);
+  const transaction = await transactionsServices.getTransaction(
+    req.params.id as string,
+  );
   res.status(200).send({ response: transaction });
 }
 
 export async function deleteTransaction(req: Request, res: Response) {
-  await transactionsServices.deleteTransaction(req.body?.id);
-  res.status(204);
+  const transaction = await transactionsServices.deleteTransaction(
+    req.params.id as string,
+  );
+  res.status(200).send({ response: transaction });
 }

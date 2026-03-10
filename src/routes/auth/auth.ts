@@ -34,9 +34,7 @@ export async function loginHandler(req: Request, res: Response) {
 
 export async function logoutHandler(req: Request, res: Response) {
   const rawToken = req.cookies?.refresh_token;
-  console.log(rawToken);
   if (rawToken) {
-    console.log("xd");
     await refreshTokenService.revoke(refreshTokenService.hash(rawToken));
   }
 
@@ -47,7 +45,6 @@ export async function logoutHandler(req: Request, res: Response) {
 
 export async function refreshHandler(req: Request, res: Response) {
   const rawToken = req.cookies.refresh_token;
-  console.log(rawToken);
   if (!rawToken) throw new AuthenticationError();
   const hashedToken = refreshTokenService.hash(rawToken);
   const existingRefreshToken = await refreshTokenService.validate(hashedToken);

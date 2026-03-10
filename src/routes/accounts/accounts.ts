@@ -24,6 +24,7 @@ export const createAccount = async (req: Request, res: Response) => {
     .send({ response: newAccount });
 };
 
+// TODO: Change this one - not working!
 export const deleteAccount = async (req: Request, res: Response) => {
   await accountsService.deleteAccount(req.auth?.id);
   res.status(204);

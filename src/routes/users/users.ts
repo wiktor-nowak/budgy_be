@@ -9,9 +9,14 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 };
 
 export const getActiveUser = async (req: Request, res: Response) => {
-  const user = usersService.getActiveUser(req.auth.id);
+  const user = await usersService.getActiveUser(req.auth.id);
   if (!user) throw new ResourceNotFoundError("User not found.");
   res.status(200).json({ response: user });
+};
+
+export const getAccessStatus = async (req: Request, res: Response) => {
+  const hasMainAccount = await usersService.hasMainAccount(req.auth.id);
+  res.status(200).json({ response: { hasMainAccount } });
 };
 
 // add method getUser - to retrieve a particular user, not active.

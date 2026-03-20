@@ -12,6 +12,7 @@ import usersRoutes from "./routes/users";
 
 import errorHandler from "./middleware/error-handler";
 import { authMiddleware } from "./middleware/authentication";
+import { requireMainAccount } from "./middleware/require-main-account";
 
 const app = express();
 const PORT = process.env.PORT ?? 3003;
@@ -27,9 +28,9 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use("/accounts", authMiddleware, accountsRoutes);
-app.use("/summary", authMiddleware, summaryRoutes);
-app.use("/categories", authMiddleware, categoryRoutes);
-app.use("/transactions", authMiddleware, transactionsRoutes);
+app.use("/summary", authMiddleware, requireMainAccount, summaryRoutes);
+app.use("/categories", authMiddleware, requireMainAccount, categoryRoutes);
+app.use("/transactions", authMiddleware, requireMainAccount, transactionsRoutes);
 
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);

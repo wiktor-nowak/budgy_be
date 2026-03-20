@@ -19,6 +19,7 @@ const USERS_SELECTED_COLUMNS = [
   "name",
   "surname",
   "role",
+  "mainAccountId",
 ];
 
 async function validateCredentials({ email, password }: LoginCredentials) {
@@ -66,6 +67,21 @@ async function getActiveUser(id: string) {
     where: { id },
     select: prepareSelectedColumns(USERS_SELECTED_COLUMNS),
   });
+}
+
+async function hasMainAccount(id: string) {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      mainAccountId: true,
+    },
+  });
+
+  if (!user) {
+    throw new ResourceNotFoundError("User instance not found.");
+  }
+
+  return Boolean(user.mainAccountId);
 }
 
 async function createUser(username: string, email: string, password: string) {
@@ -127,6 +143,7 @@ export default {
   deleteUser,
   getActiveUser,
   getAllUsers,
+  hasMainAccount,
   prepareSelectedColumns,
   updateUser,
   validateCredentials,

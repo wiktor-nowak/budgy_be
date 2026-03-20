@@ -11,9 +11,23 @@ async function createAccount({
   setAsMain,
   userId,
 }: AccountData) {
-  const ownerId = type === AccountType.SHARED ? null : userId;
-
   const createdAccount = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: {
+        mainAccountId: true,
+      },
+    });
+
+    if (!user) {
+      throw new ResourceNotFoundError("User instance not found.");
+    }
+
+    const mustCreateMainAccount = !user.mainAccountId;
+    const shouldSetAsMain = mustCreateMainAccount ? true : setAsMain;
+    const ownerId =
+      type === AccountType.SHARED && !mustCreateMainAccount ? null : userId;
+
     const account = await tx.account.create({
       data: {
         name,
@@ -33,7 +47,7 @@ async function createAccount({
       // emit event later
     }
 
-    if (ownerId && setAsMain) {
+    if (ownerId && shouldSetAsMain) {
       await tx.user.update({
         where: { id: ownerId },
         data: { mainAccountId: account.id },

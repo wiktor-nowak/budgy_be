@@ -1,4 +1,5 @@
 import express, { Router } from "express";
+import { requireMainAccount } from "../../middleware/require-main-account";
 import {
   createAccount,
   deleteAccount,
@@ -13,18 +14,18 @@ import {
 
 const accounts: Router = express.Router();
 
-accounts.get("/", getUserAccounts);
+accounts.get("/", requireMainAccount, getUserAccounts);
 
-accounts.get("/all", getAllAccounts);
-accounts.get("/main", getMainAccount);
-accounts.get("/count", getAccountsCount);
-accounts.get("/with-categories", getAccountsWithCategories);
+accounts.get("/all", requireMainAccount, getAllAccounts);
+accounts.get("/main", requireMainAccount, getMainAccount);
+accounts.get("/count", requireMainAccount, getAccountsCount);
+accounts.get("/with-categories", requireMainAccount, getAccountsWithCategories);
 // last get is with parameter
-accounts.get("/:id", getAccount);
+accounts.get("/:id", requireMainAccount, getAccount);
 
 accounts.post("/", createAccount);
-accounts.patch("/:id", updateAccount);
-accounts.delete("/:id", deleteAccount);
+accounts.patch("/:id", requireMainAccount, updateAccount);
+accounts.delete("/:id", requireMainAccount, deleteAccount);
 
 // WORTH ADDING MIDDLEWARE CHECKING THE ROLE AND WHICH ROLE CAN DO WHICH ACTIONS!!!!
 

@@ -75,7 +75,7 @@ model UserToAccount {
 model Transaction {
   id              String   @id @default(uuid()) @db.Uuid
   amount          Decimal  @db.Decimal(14, 2) // signed (+income / -expense)
-  transactionDate DateTime // business date (critical)
+  transactionDate DateTime @db.Date // business date (critical)
   description     String?
 
   // DB Values

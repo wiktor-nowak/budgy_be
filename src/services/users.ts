@@ -9,8 +9,6 @@ import {
 } from "../types/auth";
 import bcrypt from "bcrypt";
 import mailService from "./mail";
-import utilityServices from "./utility";
-import { mailer } from "../lib/emails/mailer";
 import { TransactionClient } from "../prisma/generated/internal/prismaNamespace";
 
 const SALT = 10;

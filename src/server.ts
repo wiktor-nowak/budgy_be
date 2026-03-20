@@ -7,8 +7,8 @@ import accountsRoutes from "./routes/accounts";
 import authRoutes from "./routes/auth";
 import categoryRoutes from "./routes/categories";
 import transactionsRoutes from "./routes/transactions";
-import balance from "./routes/balance";
-import users from "./routes/users";
+import summaryRoutes from "./routes/summary";
+import usersRoutes from "./routes/users";
 
 import errorHandler from "./middleware/error-handler";
 import { authMiddleware } from "./middleware/authentication";
@@ -27,12 +27,12 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use("/accounts", authMiddleware, accountsRoutes);
-app.use("/balance", authMiddleware, balance);
+app.use("/summary", authMiddleware, summaryRoutes);
 app.use("/categories", authMiddleware, categoryRoutes);
-app.use("/transactions", authMiddleware, transactionsRoutes); // ADD MIDDLEWARE
+app.use("/transactions", authMiddleware, transactionsRoutes);
 
 app.use("/auth", authRoutes);
-app.use("/users", users);
+app.use("/users", usersRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {

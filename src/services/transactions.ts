@@ -1,6 +1,9 @@
 import { prisma } from "../lib/db/prisma";
-import { Prisma, PrismaClient } from "../prisma/generated/client";
-import { ModifyTransactionData, TransactionData } from "../types/transaction";
+import { Prisma } from "../prisma/generated/client";
+import {
+  NormalizedTransactionData,
+  TransactionInputData,
+} from "../types/transaction";
 import utilityServices from "./utility";
 import ResourceNotFoundError from "../errors/ResourceNotFoundError";
 
@@ -13,20 +16,64 @@ const FIXED_INCLUDE = {
   },
 };
 
-async function createTransaction(data: TransactionData) {
+function getMonthStartDate(date: Date) {
+  const { month, year } = utilityServices.stripDate(date);
+  return new Date(Date.UTC(year, month - 1, 1));
+}
+
+function getNextMonthStartDate(date: Date) {
+  const { month, year } = utilityServices.stripDate(date);
+  return new Date(Date.UTC(year, month, 1));
+}
+
+function getMonthKey(date: Date) {
+  const { month, year } = utilityServices.stripDate(date);
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+function parseTransactionDate(date: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!match) {
+    throw new Error("Invalid transaction date format.");
+  }
+
+  const [, yearString, monthString, dayString] = match;
+  const year = Number.parseInt(yearString, 10);
+  const month = Number.parseInt(monthString, 10);
+  const day = Number.parseInt(dayString, 10);
+  const parsedDate = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    parsedDate.getUTCFullYear() !== year ||
+    parsedDate.getUTCMonth() + 1 !== month ||
+    parsedDate.getUTCDate() !== day
+  ) {
+    throw new Error("Invalid transaction date value.");
+  }
+
+  return parsedDate;
+}
+
+function normalizeTransactionData(
+  data: TransactionInputData,
+): NormalizedTransactionData {
+  return {
+    ...data,
+    transactionDate: parseTransactionDate(data.transactionDate),
+  };
+}
+
+async function createTransaction(data: TransactionInputData) {
   return await prisma.$transaction(async (tx) => {
-    const transactionData = {
-      ...data,
-      transactionDate: new Date(data.transactionDate),
-    };
+    const transactionData = normalizeTransactionData(data);
     const transaction = await tx.transaction.create({
       data: transactionData,
     });
     const acc = await tx.account.update({
-      where: { id: data.accountId },
+      where: { id: transactionData.accountId },
       data: {
         balance: {
-          increment: data.amount,
+          increment: transactionData.amount,
         },
       },
     });
@@ -34,7 +81,11 @@ async function createTransaction(data: TransactionData) {
     // console.log(transactionData);
     // console.log(transaction);
 
-    await updateBalanceSources(transactionData, tx as Prisma.TransactionClient);
+    await updateBalanceSources(
+      transactionData.accountId,
+      transactionData.transactionDate,
+      tx as Prisma.TransactionClient,
+    );
 
     return transaction;
   });
@@ -94,11 +145,8 @@ async function getMonthlyTransactions() {}
 async function getMonthlySummary() {}
 async function getMonthlyTransactionsPerCategory() {}
 
-async function updateTransaction(data: TransactionData, id: string) {
-  const modifyTransactionData = {
-    ...data,
-    transactionDate: new Date(data.transactionDate),
-  };
+async function updateTransaction(data: TransactionInputData, id: string) {
+  const modifyTransactionData = normalizeTransactionData(data);
   return await prisma.$transaction(async (tx) => {
     const deletedTransaction = await tx.transaction.delete({
       where: { id },
@@ -145,15 +193,36 @@ async function updateTransaction(data: TransactionData, id: string) {
       });
     }
 
-    if (
-      deletedTransaction.transactionDate.getTime() >
-      modifyTransactionData.transactionDate.getTime()
-    ) {
-      await updateBalanceSources(data, tx as Prisma.TransactionClient);
+    const transactionClient = tx as Prisma.TransactionClient;
+    const deletedTransactionMonthStart = getMonthStartDate(
+      deletedTransaction.transactionDate,
+    );
+    const modifiedTransactionMonthStart = getMonthStartDate(
+      modifyTransactionData.transactionDate,
+    );
+
+    if (deletedTransaction.accountId === modifyTransactionData.accountId) {
+      const startDate =
+        deletedTransactionMonthStart.getTime() <
+        modifiedTransactionMonthStart.getTime()
+          ? deletedTransactionMonthStart
+          : modifiedTransactionMonthStart;
+
+      await updateBalanceSources(
+        modifyTransactionData.accountId,
+        startDate,
+        transactionClient,
+      );
     } else {
       await updateBalanceSources(
-        { ...data, transactionDate: deletedTransaction.transactionDate },
-        tx as Prisma.TransactionClient,
+        deletedTransaction.accountId,
+        deletedTransactionMonthStart,
+        transactionClient,
+      );
+      await updateBalanceSources(
+        modifyTransactionData.accountId,
+        modifiedTransactionMonthStart,
+        transactionClient,
       );
     }
 
@@ -178,48 +247,119 @@ async function deleteTransaction(id: string) {
     // console.log(updatedAccount);
 
     await updateBalanceSources(
-      deletedTransaction,
+      deletedTransaction.accountId,
+      deletedTransaction.transactionDate,
       tx as Prisma.TransactionClient,
     );
   });
 }
 
-async function updateBalanceSources(
-  data: TransactionData,
+async function getAffectedMonthStarts(
+  accountId: string,
+  startDate: Date,
   tx: Prisma.TransactionClient,
 ) {
-  const { month, year } = utilityServices.stripDate(data.transactionDate);
-  // console.log("Transaction: ", month, " / ", year);
-  const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
-  // console.log(startOfMonth);
+  const startOfMonth = getMonthStartDate(startDate);
 
-  const monthSummaries = await tx.monthlySummary.findMany({
+  const [monthSummaries, transactions] = await Promise.all([
+    tx.monthlySummary.findMany({
+      where: {
+        accountId,
+        OR: [
+          {
+            year: { gt: startOfMonth.getUTCFullYear() },
+          },
+          {
+            year: startOfMonth.getUTCFullYear(),
+            month: { gte: startOfMonth.getUTCMonth() + 1 },
+          },
+        ],
+      },
+      orderBy: [{ year: "asc" }, { month: "asc" }],
+      select: {
+        year: true,
+        month: true,
+      },
+    }),
+    tx.transaction.findMany({
+      where: {
+        accountId,
+        transactionDate: {
+          gte: startOfMonth,
+        },
+      },
+      select: {
+        transactionDate: true,
+      },
+      orderBy: {
+        transactionDate: "asc",
+      },
+    }),
+  ]);
+
+  const affectedMonths = new Map<string, Date>();
+  affectedMonths.set(getMonthKey(startOfMonth), startOfMonth);
+
+  for (const summary of monthSummaries) {
+    const summaryMonthStart = new Date(
+      Date.UTC(summary.year, summary.month - 1, 1),
+    );
+    affectedMonths.set(getMonthKey(summaryMonthStart), summaryMonthStart);
+  }
+
+  for (const transaction of transactions) {
+    const transactionMonthStart = getMonthStartDate(transaction.transactionDate);
+    affectedMonths.set(getMonthKey(transactionMonthStart), transactionMonthStart);
+  }
+
+  return [...affectedMonths.values()].sort(
+    (left, right) => left.getTime() - right.getTime(),
+  );
+}
+
+async function rebuildMonthSummary(
+  accountId: string,
+  monthStartDate: Date,
+  tx: Prisma.TransactionClient,
+) {
+  const { month, year } = utilityServices.stripDate(monthStartDate);
+  const nextMonthStartDate = getNextMonthStartDate(monthStartDate);
+  const existingSummary = await tx.monthlySummary.findUnique({
     where: {
-      accountId: data.accountId,
-      OR: [
-        {
-          year: { gt: year },
-        },
-        {
-          year: year,
-          month: { gte: month },
-        },
-      ],
+      accountId_year_month: {
+        accountId,
+        year,
+        month,
+      },
     },
-    orderBy: [{ year: "asc" }, { month: "asc" }],
+    select: {
+      id: true,
+    },
   });
-  // console.log(monthSummaries);
 
-  const months: Date[] = monthSummaries.length
-    ? [
-        ...monthSummaries.map(
-          (summary) => new Date(Date.UTC(summary.year, summary.month - 1, 1)),
-        ),
-      ]
-    : [startOfMonth];
+  const transactionCount = await tx.transaction.count({
+    where: {
+      accountId,
+      transactionDate: {
+        gte: monthStartDate,
+        lt: nextMonthStartDate,
+      },
+    },
+  });
 
-  // console.log("mths");
-  // console.log(months);
+  if (transactionCount === 0) {
+    if (!existingSummary) {
+      return;
+    }
+
+    await tx.monthlyCategorySummary.deleteMany({
+      where: { monthlySummaryId: existingSummary.id },
+    });
+    await tx.monthlySummary.delete({
+      where: { id: existingSummary.id },
+    });
+    return;
+  }
 
   type boundariesType = {
     transactionDate: { lt: Date; gte?: Date };
@@ -229,7 +369,7 @@ async function updateBalanceSources(
   async function doAggregate(boundaries: boundariesType) {
     return await tx.transaction.aggregate({
       where: {
-        accountId: data.accountId,
+        accountId,
         ...boundaries,
       },
       _sum: {
@@ -238,110 +378,95 @@ async function updateBalanceSources(
     });
   }
 
-  // const monthsPurified = [...new Set(months.map((m) => m.getTime()))].map(
-  //   (t) => new Date(t),
-  // );
-  // console.log("mths purified");
-  // console.log(months);
+  const openingBoundaries = {
+    transactionDate: { lt: monthStartDate },
+  };
+  const incomeBoundaries = {
+    transactionDate: { gte: monthStartDate, lt: nextMonthStartDate },
+    amount: { gt: 0 },
+  };
+  const expenseBoundaries = {
+    transactionDate: { gte: monthStartDate, lt: nextMonthStartDate },
+    amount: { lt: 0 },
+  };
 
-  for (const monthStartDate of months) {
-    const { month, year } = utilityServices.stripDate(monthStartDate);
-    const nextMonthStartDate = new Date(Date.UTC(year, month, 1));
-    const openingBoundaries = {
-      transactionDate: { lt: monthStartDate },
-    };
-    const incomeBoundaries = {
-      transactionDate: { gte: monthStartDate, lt: nextMonthStartDate },
-      amount: { gt: 0 },
-    };
-    const expenseBoundaries = {
-      transactionDate: { gte: monthStartDate, lt: nextMonthStartDate },
-      amount: { lt: 0 },
-    };
+  const [openingBalance, totalIncome, totalExpense] = await Promise.all([
+    doAggregate(openingBoundaries),
+    doAggregate(incomeBoundaries),
+    doAggregate(expenseBoundaries),
+  ]).then((results) =>
+    results.map((aggregate) => aggregate._sum.amount ?? new Prisma.Decimal(0)),
+  );
+  const closingBalance = openingBalance.plus(totalIncome).plus(totalExpense);
 
-    const [openingBalance, totalIncome, totalExpense] = await Promise.all([
-      doAggregate(openingBoundaries),
-      doAggregate(incomeBoundaries),
-      doAggregate(expenseBoundaries),
-    ]).then((results) =>
-      results.map(
-        (aggregate) => aggregate._sum.amount ?? new Prisma.Decimal(0),
-      ),
-    );
-    const closingBalance = openingBalance.plus(totalIncome).plus(totalExpense);
-
-    // console.log({
-    //   monthStartDate,
-    //   nextMonthStartDate,
-    // });
-
-    // console.log({
-    //   openingBalance,
-    //   totalIncome,
-    //   totalExpense,
-    //   closingBalance,
-    // });
-
-    const summary = await tx.monthlySummary.upsert({
-      where: {
-        accountId_year_month: {
-          accountId: data.accountId,
-          year,
-          month,
-        },
-      },
-      update: {
-        openingBalance,
-        totalIncome,
-        totalExpense,
-        closingBalance,
-      },
-      create: {
-        accountId: data.accountId,
+  const summary = await tx.monthlySummary.upsert({
+    where: {
+      accountId_year_month: {
+        accountId,
         year,
         month,
-        openingBalance,
-        totalIncome,
-        totalExpense,
-        closingBalance,
       },
-    });
-    // console.log(summary);
+    },
+    update: {
+      openingBalance,
+      totalIncome,
+      totalExpense,
+      closingBalance,
+    },
+    create: {
+      accountId,
+      year,
+      month,
+      openingBalance,
+      totalIncome,
+      totalExpense,
+      closingBalance,
+    },
+  });
 
-    await tx.monthlyCategorySummary.deleteMany({
-      where: { monthlySummaryId: summary.id },
-    });
+  await tx.monthlyCategorySummary.deleteMany({
+    where: { monthlySummaryId: summary.id },
+  });
 
-    const categoryGroups = await tx.transaction
-      .groupBy({
-        by: ["categoryId"],
-        where: {
-          accountId: data.accountId,
-          transactionDate: {
-            gte: monthStartDate,
-            lt: nextMonthStartDate,
-          },
-          categoryId: { not: undefined },
+  const categoryGroups = await tx.transaction
+    .groupBy({
+      by: ["categoryId"],
+      where: {
+        accountId,
+        transactionDate: {
+          gte: monthStartDate,
+          lt: nextMonthStartDate,
         },
-        _sum: {
-          amount: true,
-        },
-      })
-      .then((results) =>
-        results.map((group) => ({
-          monthlySummaryId: summary.id,
-          categoryId: group.categoryId!,
-          totalAmount: group._sum.amount ?? new Prisma.Decimal(0),
-        })),
-      );
+        categoryId: { not: undefined },
+      },
+      _sum: {
+        amount: true,
+      },
+    })
+    .then((results) =>
+      results.map((group) => ({
+        monthlySummaryId: summary.id,
+        categoryId: group.categoryId!,
+        totalAmount: group._sum.amount ?? new Prisma.Decimal(0),
+      })),
+    );
 
-    // console.log(categoryGroups);
+  if (categoryGroups.length > 0) {
+    await tx.monthlyCategorySummary.createMany({
+      data: categoryGroups,
+    });
+  }
+}
 
-    if (categoryGroups.length > 0) {
-      await tx.monthlyCategorySummary.createMany({
-        data: categoryGroups,
-      });
-    }
+async function updateBalanceSources(
+  accountId: string,
+  startDate: Date,
+  tx: Prisma.TransactionClient,
+) {
+  const months = await getAffectedMonthStarts(accountId, startDate, tx);
+
+  for (const monthStartDate of months) {
+    await rebuildMonthSummary(accountId, monthStartDate, tx);
   }
 }
 
